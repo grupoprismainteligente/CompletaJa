@@ -1,0 +1,114 @@
+﻿@{
+    ViewData["Title"] = "Cadastrar Novo Álbum";
+}
+
+@section Styles {
+    <style>
+        .btn-back-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #1e293b;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .container-cadastro-central {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+        }
+    </style>
+}
+
+<main class="content album-add-content" style="padding-top:20px;">
+  
+
+    <div class="container-cadastro-central">
+        <div class="create-header" style="margin-bottom: 25px; text-align: center;">
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">Cadastrar Novo Álbum Global</h3>
+            <p style="color: #64748b; font-size: 0.9rem;">Insira o modelo base para que toda a comunidade possa utilizá-lo</p>
+        </div>
+
+        <form id="formCriarAlbum" method="post" action="/Album/Criar" enctype="multipart/form-data">
+
+            <div class="upload-placeholder" onclick="document.getElementById('inputCapa').click()" style="cursor: pointer; position: relative; overflow: hidden; height: 140px; background: #f8fafc; border: 2px dashed #1D58E6; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                <img id="previewCapa" src="" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;" />
+                <div id="uploadContent" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; color: #1D58E6;">
+                    <i class="fa-solid fa-book-open" style="font-size: 2rem; margin-bottom: 5px;"></i>
+                    <span style="font-size: 0.85rem; font-weight: 700; text-align: center;">Adicionar Imagem da Capa</span>
+                </div>
+                <input type="file" id="inputCapa" name="Capa" accept="image/*" required style="display: none;" onchange="previewImagem(this)" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">Nome do Álbum</label>
+                <input type="text" id="inputNomeAlbum" name="Nome" required placeholder="Ex: Copa do Mundo 2026 - Panini" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 25px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">Quantidade Total de Figurinhas</label>
+                <input type="number" id="inputTotalFigurinhas" name="TotalFigurinhas" required min="1" placeholder="Ex: 670" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px;">
+            </div>
+
+            <button type="submit" class="btn-submit-album" style="width: 100%; background: #1D58E6; color: white; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Publicar Coleção no Catálogo
+            </button>
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        function previewImagem(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('previewCapa').src = e.target.result;
+                    document.getElementById('previewCapa').style.display = 'block';
+                    document.getElementById('uploadContent').style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Intercepta o envio do formulário para rodar a validação de duplicidade idêntica
+        document.getElementById('formCriarAlbum').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Pausa o envio padrão
+
+            const nomeValue = document.getElementById('inputNomeAlbum').value;
+            const qtdValue = document.getElementById('inputTotalFigurinhas').value;
+
+            try {
+                // Dispara a chamada assíncrona para o Controller
+                let formData = new FormData();
+                formData.append('nome', nomeValue);
+                formData.append('quantidade', qtdValue);
+
+                let response = await fetch('/Album/VerificarDuplicidade', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                let data = await response.json();
+
+                if (data.duplicado) {
+                    // Exibe o aviso caso o algoritmo encontre similaridade
+                    alert(`Cadastro Bloqueado!\n\nJá existe uma coleção registrada com características semelhantes a esta:\n"${data.nomeSemelhante}" com ${qtdValue} figurinhas.`);
+                } else {
+                    // Se estiver limpo, prossegue e envia o formulário de verdade
+                    this.submit();
+                }
+            } catch (err) {
+                console.error("Erro na validação de duplicidade:", err);
+                this.submit(); // Caso a rede falhe, envia por segurança
+            }
+        });
+    </script>
+}

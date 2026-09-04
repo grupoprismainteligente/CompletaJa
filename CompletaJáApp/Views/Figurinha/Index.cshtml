@@ -1,0 +1,121 @@
+﻿@model IEnumerable<CompletaJaApp.Models.Figurinha>
+@{
+    ViewData["Title"] = "Coleção";
+    var album = ViewBag.Album as CompletaJaApp.Models.Album;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/figurinhas.css" asp-append-version="true" />
+}
+
+<main class="content collection-content">
+
+    <div class="album-header-card">
+        <img src="@album.CapaUrl" alt="@album.Nome">
+        <div class="album-title">@album.Nome</div>
+
+        <div class="progress-section">
+            <div class="progress-top">
+                <span class="progress-label">Progresso Total</span>
+                <span class="progress-pct">@ViewBag.Progresso%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: @ViewBag.Progresso%;"></div>
+            </div>
+            <div class="progress-bottom">
+                <span>@ViewBag.Unicas / @ViewBag.TotalDoAlbum figurinhas</span>
+                <span class="faltantes-text">@ViewBag.Faltantes faltantes</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-container">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="inputBusca" placeholder="Buscar por Número..." onkeyup="filtrar()">
+        </div>
+
+        <select id="selectFiltro" class="filter-dropdown">
+            <option value="todos">Todas</option>
+            <option value="faltantes">Faltantes</option>
+            <option value="repetidas">Repetidas</option>
+        </select>
+    </div>
+
+    <div class="stickers-grid" id="gridFigurinhas">
+        @for (int i = 1; i <= ViewBag.TotalDoAlbum; i++)
+        {
+            var numStr = i.ToString("D2"); // Formata números como "01", "02", etc.
+            var figurinha = Model.FirstOrDefault(f => f.Codigo == numStr) ?? new CompletaJaApp.Models.Figurinha { Codigo = numStr, Quantidade = 0, Nome = "" };
+
+            var isMissing = figurinha.Quantidade == 0;
+            var cardClass = isMissing ? "fig-card missing" : "fig-card collected";
+
+            <div class="@cardClass" data-num="@figurinha.Codigo" data-qty="@figurinha.Quantidade" onclick="abrirModal('@figurinha.Codigo', '@figurinha.Nome', @figurinha.Quantidade)">
+
+                @if (figurinha.Quantidade > 0)
+                {
+                    var badgeClass = figurinha.Quantidade > 1 ? "fig-badge extra" : "fig-badge";
+                    var badgeText = figurinha.Quantidade > 1 ? $"+{figurinha.Quantidade - 1}" : "1";
+                    <div class="@badgeClass">@badgeText</div>
+                }
+
+                <div class="fig-img-container">
+                    @if (figurinha.Quantidade == 0)
+                    {
+                        <i class="fa-solid fa-circle-plus" style="font-size: 2.2rem; color: #D1D5DB;"></i>
+                    }
+                    else if (figurinha.Quantidade == 1)
+                    {
+                        <i class="fa-solid fa-circle-check" style="font-size: 2.5rem; color: #22c55e;"></i>
+                    }
+                    else
+                    {
+                        <i class="fa-solid fa-layer-group" style="font-size: 2.5rem; color: #FBBF24;"></i>
+                    }
+                </div>
+
+                <div class="fig-info">
+                    <div class="fig-num">@figurinha.Codigo</div>
+                    <div class="fig-name">@(string.IsNullOrEmpty(figurinha.Nome) ? "Adicionar" : figurinha.Nome)</div>
+                </div>
+            </div>
+        }
+    </div>
+
+</main>
+
+<div id="modalSticker" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Editar Figurinha <span id="modalNum" style="color: #1D58E6;"></span></h3>
+            <button class="close-btn" onclick="fecharModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form action="/Figurinha/Salvar" method="post">
+            <input type="hidden" name="AlbumId" value="@album.Id" />
+            <input type="hidden" name="Codigo" id="inputCodigoModal" />
+
+            <div class="form-group-modal" style="text-align: center;">
+                <label>Quantidade em Mãos</label>
+                <div class="qty-controls">
+                    <button type="button" class="qty-btn" onclick="mudarQtd(-1)">-</button>
+                    <input type="hidden" name="Quantidade" id="inputQtdReal" value="0">
+                    <div class="qty-display" id="displayQtd">0</div>
+                    <button type="button" class="qty-btn" onclick="mudarQtd(1)">+</button>
+                </div>
+            </div>
+
+            <div class="form-group-modal">
+                <label>Nome do Jogador / Item (Opcional)</label>
+                <input type="text" name="Nome" id="inputNomeModal" placeholder="Ex: Neymar Jr">
+            </div>
+
+            <button type="submit" class="batch-save btn-salvar">Salvar Alterações</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/figurinhas.js" asp-append-version="true"></script>
+}

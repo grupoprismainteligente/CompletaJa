@@ -1,0 +1,129 @@
+﻿@model IEnumerable<CompletaJaApp.Models.Album>
+@{
+    ViewData["Title"] = "Catálogo de Álbuns";
+    var meusAlbunsIds = ViewBag.MeusAlbunsIds as List<int> ?? new List<int>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/locais.css" asp-append-version="true" />
+    <style>
+        /* Ajuste do grid para o catálogo (mesmo padrão de Locais) */
+        @@media (min-width: 768px) {
+            .local-list { 
+                display: grid !important; 
+                grid-template-columns: repeat(2, 1fr) !important; 
+                gap: 24px !important; 
+            }
+        }
+
+        /* Estilo robusto do Card (mesmo padrão de Locais) */
+        .local-card {
+            display: flex !important; flex-direction: row !important; align-items: center !important;
+            width: 100% !important; box-sizing: border-box !important; 
+            padding: 24px !important; 
+            gap: 24px !important; 
+            background: white !important; border-radius: 20px !important;
+            border: 1px solid #E5E7EB !important; text-decoration: none !important; color: inherit !important;
+            transition: transform 0.2s, box-shadow 0.2s !important;
+            min-height: 160px !important;
+            cursor: pointer;
+        }
+        .local-card:hover { transform: translateY(-3px) !important; box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; }
+
+        .local-img { 
+            width: 150px !important; height: 110px !important; 
+            object-fit: cover !important; flex-shrink: 0 !important; border-radius: 12px !important; 
+        }
+
+        .local-details { flex: 1 !important; min-width: 0 !important; display: flex !important; flex-direction: column !important; align-items: flex-start !important; gap: 4px !important; }
+        
+        /* Ajuste específico para o Card de Criar Novo para alinhar com os cards robustos */
+        .card-criar-novo {
+            background: #f8fafc; border: 2px dashed #1D58E6 !important;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; cursor: pointer; padding: 20px; border-radius: 20px;
+            transition: 0.2s; min-height: 160px; 
+        }
+        .card-criar-novo:hover { background: #eff6ff; transform: translateY(-3px); }
+
+        .ja-coleciona { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+        .badge-check { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; margin-top: 5px; }
+    </style>
+}
+
+<main class="content local-content" style="margin-top: 15px; text-align: center;">
+
+    <div class="local-header">
+        <h2>Catálogo de Álbuns do Sistema</h2>
+        <p>Selecione uma coleção existente para começar a gerenciar</p>
+    </div>
+
+    <div class="search-container" style="max-width: 500px; margin: 0 auto 35px auto;">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="inputBuscaGlobal" placeholder="Buscar álbum no catálogo..." onkeyup="filtrarCatalogo()">
+    </div>
+
+    <div class="local-list">
+
+        @foreach (var album in Model)
+        {
+            var coleciona = meusAlbunsIds.Contains(album.Id);
+            var cardClass = coleciona ? "local-card ja-coleciona" : "local-card";
+
+            <div class="@cardClass"
+                 data-nome="@album.Nome.ToLower()"
+                 onclick="confirmarColecao('@album.Id', '@album.Nome')">
+
+                <img src="@album.CapaUrl" class="local-img" alt="@album.Nome">
+                <div class="local-details">
+                    <h3 style="margin:0 !important; font-size: 1.25rem; font-weight: 800; color: #0f172a;">@album.Nome</h3>
+                    
+                    <div style="font-size: 0.95rem; color: #64748b;">
+                        <i class="fa-regular fa-clone"></i> @album.QuantidadeTotalFigurinhas figurinhas no total
+                    </div>
+                    
+                    <div style="font-size: 0.85rem; color: #1D58E6; font-weight: 700;">
+                        <i class="fa-solid fa-users"></i> @album.UsuariosVinculados colecionadores
+                    </div>
+
+                    @if (coleciona)
+                    {
+                        <span class="badge-check"><i class="fa-solid fa-circle-check"></i> Você já coleciona</span>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="card-criar-novo" onclick="window.location.href='/Album/Add'">
+            <i class="fa-solid fa-book-medical" style="font-size: 2.2rem; color: #1D58E6; margin-bottom: 8px;"></i>
+            <h4 style="color: #1D58E6; font-weight: 700; font-size: 1.05rem; margin: 5px 0;">Não encontrou seu álbum?</h4>
+            <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Cadastrar novo modelo</p>
+        </div>
+
+    </div>
+</main>
+
+<form id="formVincularAlbum" method="post" action="/Album/Vincular" style="display:none;">
+    <input type="hidden" name="albumId" id="inputAlbumId" />
+</form>
+
+@section Scripts {
+    <script>
+        function filtrarCatalogo() {
+            const termo = document.getElementById('inputBuscaGlobal').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.local-card');
+            cards.forEach(card => {
+                const nome = card.getAttribute('data-nome') || "";
+                card.style.display = nome.includes(termo) ? 'flex' : 'none';
+            });
+        }
+
+        function confirmarColecao(id, nomeAlbum) {
+            const prosseguir = confirm(`Deseja adicionar o álbum "${nomeAlbum}" às suas coleções ativas?`);
+            if (prosseguir) {
+                document.getElementById('inputAlbumId').value = id;
+                document.getElementById('formVincularAlbum').submit();
+            }
+        }
+    </script>
+}

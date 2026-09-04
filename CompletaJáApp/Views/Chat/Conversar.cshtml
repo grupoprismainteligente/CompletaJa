@@ -1,0 +1,376 @@
+﻿@model IEnumerable<CompletaJaApp.Models.Mensagem>
+@{
+    ViewData["Title"] = "Chat";
+    var outroUsuario = ViewBag.OutroUsuario as CompletaJaApp.Models.Usuario;
+    int meuId = ViewBag.MeuId;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+    <style>
+        /* =========================================================
+                   O SEGREDO DO INNER SCROLL (ROLAGEM INTERNA)
+                   ========================================================= */
+
+        /* Trava o scroll da tela inteira do navegador */
+        body {
+            overflow: hidden !important;
+        }
+
+        /* 1. Container Principal da Página */
+        .chat-page-main {
+            padding: 0 !important;
+            margin: 0 !important;
+            /* Calcula a altura exata descontando o Header e o Menu de baixo */
+            height: calc(100vh - 140px);
+            max-height: calc(100vh - 140px); /* TRAVA 1: Impede a página de esticar além do monitor */
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+            min-height: 0; /* Permite o encolhimento correto dos filhos */
+        }
+
+        /* 2. Janela de Conteúdo do Chat */
+        .chat-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            min-height: 0; /* TRAVA 2: Força o flexbox a respeitar o tamanho do pai */
+            margin: 0;
+            background: #ffffff;
+        }
+
+        /* 3. Cabeçalho do Usuário (Fixo no topo) */
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: #ffffff;
+            border-bottom: 1px solid #cbd5e1;
+            gap: 15px;
+            flex-shrink: 0; /* Impede que o cabeçalho seja esmagado */
+        }
+
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .chat-user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+            .chat-user-info h3 {
+                margin: 0;
+                font-size: 1.1rem;
+                color: #0f172a;
+                font-weight: 700;
+            }
+
+            .chat-user-info span {
+                font-size: 0.8rem;
+                color: #64748b;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+
+        /* 4. Área das Mensagens (Única área que rola) */
+        .chat-messages {
+            flex: 1; /* Ocupa todo o espaço disponível no meio da tela */
+            min-height: 0; /* TRAVA 3: A REGRA DE OURO. Força o scroll a aparecer aqui dentro */
+            padding: 20px;
+            overflow-y: auto; /* Ativa a rolagem vertical apenas nesta caixa */
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background-color: #f8fafc;
+        }
+
+        /* 5. Bolhas de Mensagem */
+        .msg-bubble {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            flex-shrink: 0; /* Impede que as bolhas fiquem achatadas */
+        }
+
+            .msg-bubble.mine {
+                align-self: flex-end;
+                background: #1D58E6;
+                color: #ffffff;
+                border-bottom-right-radius: 4px;
+            }
+
+            .msg-bubble.other {
+                align-self: flex-start;
+                background: #ffffff;
+                color: #334155;
+                border-bottom-left-radius: 4px;
+                border: 1px solid #e2e8f0;
+            }
+
+        .msg-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .msg-bubble.mine .msg-time {
+            align-self: flex-end;
+            font-size: 0.7rem;
+            color: #bfdbfe;
+        }
+
+        .msg-bubble.other .msg-time {
+            align-self: flex-end;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
+        .chat-empty {
+            text-align: center;
+            color: #64748b;
+            margin: auto;
+            font-size: 0.95rem;
+            background: #ffffff;
+            padding: 12px 24px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* 6. Barra de Input (Fixa logo acima do menu inferior) */
+        .chat-input-area {
+            display: flex;
+            padding: 12px 20px;
+            background: #ffffff;
+            border-top: 1px solid #cbd5e1;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0; /* Impede que ela saia da tela ou diminua de tamanho */
+        }
+
+            .chat-input-area input {
+                flex: 1;
+                padding: 12px 18px;
+                border: 1px solid #cbd5e1;
+                border-radius: 30px;
+                font-size: 0.95rem;
+                outline: none;
+                background: #f8fafc;
+            }
+
+                .chat-input-area input:focus {
+                    border-color: #1D58E6;
+                    background: #ffffff;
+                }
+
+        .btn-send {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #1D58E6;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        /* Altura adaptável para navegadores mobile (evita quebra com a barra de navegação do celular) */
+        @@media (max-width: 768px) {
+            .chat-page-main {
+                height: calc(100dvh - 140px);
+                max-height: calc(100dvh - 140px);
+            }
+        }
+    </style>
+}
+
+<main class="content chat-page-main">
+    <div class="chat-content">
+
+        <div class="chat-header">
+            <img src="@outroUsuario.FotoUrl" class="chat-avatar" alt="@outroUsuario.Nome">
+            <div class="chat-user-info">
+                <h3>@outroUsuario.Nome</h3>
+                <span><i class="fa-solid fa-circle" style="font-size:0.6rem; color:#22c55e;"></i> Online para trocas</span>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatBox">
+            @if (!Model.Any())
+            {
+                <div class="chat-empty" id="empty-state">
+                    <p style="margin: 0;">Diga olá para @outroUsuario.Nome e combine um horário!</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var msg in Model)
+                {
+                    var isMine = msg.RemetenteId == meuId;
+                    var bubbleClass = isMine ? "msg-bubble mine" : "msg-bubble other";
+
+                    <div class="@bubbleClass">
+                        <div class="msg-text">@msg.Texto</div>
+                        <div class="msg-time">@msg.DataEnvio.ToString("HH:mm")</div>
+                    </div>
+                }
+            }
+        </div>
+
+        <form class="chat-input-area" id="chat-form" action="/Chat/Enviar" method="post">
+            <input type="hidden" id="destinatario-id" name="DestinatarioId" value="@outroUsuario.Id" />
+            <input type="text"
+                   id="txt-mensagem"
+                   name="Texto"
+                   placeholder="Escreva sua mensagem..."
+                   maxlength="1000"
+                   required
+                   autocomplete="off" />
+            <button type="submit" id="btn-enviar" class="btn-send"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+
+    </div>
+</main>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+
+    <script>
+        // Função para empurrar o scroll do chat para o final
+        function scrollChat() {
+        const chatBox = document.getElementById('chatBox');
+        if (chatBox) {
+        chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        }
+
+        // Executa a rolagem em etapas para driblar o atraso de carregamento em redes móveis
+        document.addEventListener("DOMContentLoaded", function() {
+        scrollChat();
+        setTimeout(scrollChat, 150);
+        setTimeout(scrollChat, 500);
+        });
+
+        // Força a rolagem quando absolutamente tudo (imagens inclusive) terminar de renderizar
+        window.addEventListener("load", scrollChat);
+
+        // Configuração do Hub do SignalR
+        const conexao = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .build();
+
+        const meuIdAtual = @meuId;
+
+        // Escuta novas mensagens em tempo real
+        conexao.on(
+            "ReceberMensagem",
+            function(remetenteId, destinatarioId, mensagem) {
+
+                const outroIdAtual = Number(
+                    document.getElementById("destinatario-id").value
+                );
+
+                const remetente = Number(remetenteId);
+                const destinatario = Number(destinatarioId);
+
+                const pertenceAConversa =
+                    (remetente === meuIdAtual &&
+                        destinatario === outroIdAtual) ||
+                    (remetente === outroIdAtual &&
+                        destinatario === meuIdAtual);
+
+                if (!pertenceAConversa) {
+                    return;
+                }
+
+                const emptyState =
+                    document.getElementById("empty-state");
+
+                if (emptyState) {
+                    emptyState.remove();
+                }
+
+                const ehMinha = remetente === meuIdAtual;
+                const bubbleClass = ehMinha
+                    ? "msg-bubble mine"
+                    : "msg-bubble other";
+
+                const dataAtual = new Date();
+
+                const hora =
+                    dataAtual.getHours().toString().padStart(2, "0") +
+                    ":" +
+                    dataAtual.getMinutes().toString().padStart(2, "0");
+
+                const divMensagem = document.createElement("div");
+                divMensagem.className = bubbleClass;
+
+                const divTexto = document.createElement("div");
+                divTexto.className = "msg-text";
+                divTexto.textContent = mensagem;
+
+                const divHora = document.createElement("div");
+                divHora.className = "msg-time";
+                divHora.textContent = hora;
+
+                divMensagem.appendChild(divTexto);
+                divMensagem.appendChild(divHora);
+
+                document
+                    .getElementById("chatBox")
+                    .appendChild(divMensagem);
+
+                scrollChat();
+            }
+        );
+
+        conexao.start().catch(function (err) {
+        return console.error(err.toString());
+        });
+
+        // Envio do formulário via AJAX + SignalR
+        document.getElementById("chat-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const campoMensagem = document.getElementById("txt-mensagem");
+        const mensagemTexto = campoMensagem.value;
+        const destinoId = document.getElementById("destinatario-id").value;
+
+        if (mensagemTexto.trim() !== "") {
+        // Dispara via WebSocket para o outro usuário ver na hora
+                conexao.invoke("EnviarMensagem", Number(destinoId), mensagemTexto).catch(function(err) {
+        return console.error(err.toString());
+        });
+
+        // Salva permanentemente no banco de dados em segundo plano
+        fetch('/Chat/Enviar', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `DestinatarioId=${destinoId}&Texto=${encodeURIComponent(mensagemTexto)}`
+        });
+
+        campoMensagem.value = "";
+        campoMensagem.focus(); // Mantém o teclado virtual do celular aberto após o envio
+        }
+        });
+    </script>
+}

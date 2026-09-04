@@ -1,0 +1,214 @@
+﻿/* ==========================================
+   ESTILOS GLOBAIS DA TELA DE LOCAIS
+   ========================================== */
+
+.local-content {
+    padding: 20px;
+    padding-bottom: 100px; /* Margem de segurança para o menu inferior não cobrir nada */
+}
+
+.local-header {
+    margin-bottom: 20px;
+}
+
+    .local-header h2 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .local-header p {
+        color: #64748b;
+        font-size: 0.95rem;
+    }
+
+/* Botão de Adicionar Local */
+.btn-add-local {
+    width: 100%;
+    background: #1D58E6;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    transition: background 0.2s;
+}
+
+    .btn-add-local:hover {
+        background: #1545b8;
+    }
+
+/* Caixa de Busca */
+.search-container {
+    position: relative;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+}
+
+    .search-container i {
+        position: absolute;
+        left: 15px;
+        color: #94a3b8;
+    }
+
+    .search-container input {
+        width: 100%;
+        padding: 12px 16px 12px 45px;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+        .search-container input:focus {
+            border-color: #1D58E6;
+        }
+
+/* ==========================================
+   LISTAGEM E GRID DE CARDS (INDEX E BUSCA)
+   ========================================== */
+
+.local-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* O Card de Local Base */
+.local-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 16px;
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    overflow: hidden;
+    min-width: 0; /* Impede que o cartão estoure o tamanho limite calculado pelo Grid */
+}
+
+    .local-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+/* Imagem interna do Card */
+.local-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 14px;
+    flex-shrink: 0; /* Trava o tamanho da imagem, impedindo-a de esmagar o texto */
+}
+
+/* Bloco de Informações (Direita da foto) */
+.local-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0; /* Força o contêiner de texto a entender o limite e quebrar as linhas */
+    text-align: left;
+}
+
+    .local-details h3 {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+        line-height: 1.2;
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+    }
+
+.local-cnpj, .local-area {
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.4;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+/* Badge de Usuários Vinculados */
+.users-badge {
+    align-self: flex-start;
+    background: #eff6ff;
+    color: #1D58E6;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Card tracejado de Criação (Fim da lista) */
+.card-criar-novo {
+    background: #f8fafc;
+    border: 2px dashed #1D58E6 !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    padding: 20px;
+    border-radius: 20px;
+    transition: 0.2s;
+    min-height: 154px;
+}
+
+    .card-criar-novo:hover {
+        background: #eff6ff;
+        transform: translateY(-2px);
+    }
+
+/* ==========================================
+   RESPONSIVIDADE: COMPORTAMENTO EM TELA LARGA (DESKTOP)
+   ========================================== */
+@media (min-width: 768px) {
+
+    .local-content {
+        display: block !important;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .local-header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .btn-add-local {
+        max-width: 320px;
+        margin: 0 auto 20px auto;
+    }
+
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto 35px auto;
+    }
+
+    .local-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 20px;
+        width: 100%;
+    }
+}

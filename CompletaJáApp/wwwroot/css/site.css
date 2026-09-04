@@ -1,0 +1,59 @@
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* ======== AJUSTE DO VLIBRAS PARA MOBILE (GLOBAL) ======== */
+@media (max-width: 768px) {
+    /* 1. Encolhe o botão azul em 30% e cola-o na borda da tela */
+    [vw] [vw-access-button] {
+        transform: scale(0.7) !important;
+        transform-origin: right center !important;
+    }
+
+    /* 2. Empurra o botão para a parte de BAIXO da tela */
+    [vw] {
+        top: auto !important;
+        bottom: 20px !important;
+        right: 0 !important;
+    }
+
+    /* 3. Ajusta a janela do avatar 3D para não vazar da tela do celular */
+    [vw-plugin-wrapper] {
+        max-width: 90vw !important;
+        right: 5vw !important;
+    }
+}
+
+/* ======== ESTADO DINÂMICO DO VLIBRAS ======== */
+/* Oculta o VLibras completamente enquanto o Modal de Figurinhas estiver aberto */
+body.vlibras-no-topo [vw] {
+    display: none !important;
+}

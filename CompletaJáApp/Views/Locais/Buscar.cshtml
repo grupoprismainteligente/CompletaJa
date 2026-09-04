@@ -1,0 +1,116 @@
+﻿@model IEnumerable<CompletaJaApp.Models.Local>
+@{
+    ViewData["Title"] = "Buscar Ponto de Troca";
+    var meusLocaisIds = ViewBag.MeusLocaisIds as List<int> ?? new List<int>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/locais.css" asp-append-version="true" />
+    <style>
+        .btn-back-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #1e293b;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .card-criar-novo {
+            background: #f8fafc;
+            border: 2px dashed #1D58E6 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            padding: 20px;
+            border-radius: 20px;
+            transition: 0.2s;
+        }
+
+            .card-criar-novo:hover {
+                background: #eff6ff;
+                transform: translateY(-3px);
+            }
+
+        .ja-vinculado {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .badge-check {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 5px;
+        }
+    </style>
+}
+
+<main class="content local-content" style="margin-top: 15px; text-align: center;">
+
+    <div class="local-header">
+        <h2>Pontos de Troca do Sistema</h2>
+        <p>Selecione um local existente para se vincular ou crie uma nova localidade</p>
+    </div>
+
+    <div class="search-container">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="inputBuscaGlobal" placeholder="Buscar por Nome, Endereço ou CNPJ..." onkeyup="filtrarGlobal()">
+    </div>
+
+    <div class="local-list">
+
+        @foreach (var local in Model)
+        {
+            var isLinked = meusLocaisIds.Contains(local.Id);
+            var cardClass = isLinked ? "local-card ja-vinculado" : "local-card";
+
+            <div class="@cardClass"
+                 data-nome="@local.Nome.ToLower()"
+                 data-endereco="@local.Endereco.ToLower()"
+                 data-cnpj="@local.CNPJ.Replace(".", "").Replace("/", "").Replace("-", "")"
+                 onclick="confirmarVinculo('@local.Id', '@local.Nome')">
+
+                <img src="@local.FotoUrl" class="local-img" alt="@local.Nome">
+                <div class="local-details">
+                    <h3>@local.Nome</h3>
+                    <span class="local-cnpj">CNPJ: @local.CNPJ</span>
+                    <span class="local-area"><strong>Endereço:</strong> @local.Endereco</span>
+                    <span class="local-area"><strong>Área de Troca:</strong> @local.AreaTroca</span>
+                    <div class="users-badge">
+                        <i class="fa-solid fa-users"></i> Colecionadores ativos: @local.UsuariosVinculados
+                    </div>
+                    @if (isLinked)
+                    {
+                        <span class="badge-check"><i class="fa-solid fa-circle-check"></i> Você já faz parte</span>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="card-criar-novo" onclick="window.location.href='/Locais/Add'">
+            <i class="fa-solid fa-circle-plus" style="font-size: 2.5rem; color: #1D58E6; margin-bottom: 10px;"></i>
+            <h4 style="color: #1D58E6; font-weight: 700; font-size: 1.1rem;">Não encontrou o local?</h4>
+            <p style="font-size: 0.8rem; color: #64748b;">Clique aqui para cadastrar uma nova localidade no sistema</p>
+        </div>
+
+    </div>
+</main>
+
+<form id="formVincular" method="post" action="/Locais/Vincular" style="display:none;">
+    <input type="hidden" name="localId" id="inputLocalId" />
+</form>
+
+@section Scripts {
+    <script src="~/js/locais-buscar.js" asp-append-version="true"></script>
+}

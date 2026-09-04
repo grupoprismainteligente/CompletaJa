@@ -1,0 +1,84 @@
+﻿@model IEnumerable<CompletaJáApp.Controllers.MatchDashboardViewModel>
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Home";
+    var nomeUsuario = Context.Session.GetString("NomeUsuario") ?? "Colecionador";
+}
+
+<main class="content">
+    <div class="home-grid">
+
+        <h1 class="welcome-text">Olá,<br>@nomeUsuario!</h1>
+
+        <div class="stats-row">
+            <div class="stat-card blue-card">
+                <span class="stat-number">@ViewBag.Repetidas</span>
+                <span class="stat-label">REPETIDAS</span>
+            </div>
+            <div class="stat-card white-card">
+                <span class="stat-number red-text">@ViewBag.Faltantes</span>
+                <span class="stat-label">FALTANTES</span>
+            </div>
+        </div>
+
+        <div class="shortcuts">
+            <h3>Atalhos</h3>
+
+            <a href="/Album" class="main-shortcut" style="text-decoration: none;">
+                <div class="shortcut-info">
+                    <strong>Meus Álbuns</strong>
+                    <span>Gerencie suas coleções</span>
+                </div>
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+
+            <div class="secondary-shortcuts">
+                <a href="/Locais" class="short-box yellow-box" style="text-decoration: none;">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <div class="inner-text">
+                        <strong>Gerenciar Locais</strong>
+                    </div>
+                </a>
+
+                <a href="/Troca" class="short-box light-blue-box" style="text-decoration: none;">
+                    <i class="fa-solid fa-handshake"></i>
+                    <div class="inner-text">
+                        <strong>Encontrar Trocas</strong>
+                        <small>Matches automáticos</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <section class="matches">
+            <div class="section-header">
+                <h3>Matches Recentes</h3>
+                <a href="/Troca">Ver todos</a>
+            </div>
+
+            <div class="matches-list">
+                @if (!Model.Any())
+                {
+                    <div style="text-align: center; width: 100%; color: #94a3b8; font-size: 0.9rem; padding: 20px 0;">
+                        <i class="fa-solid fa-ghost" style="font-size: 2rem; margin-bottom: 10px; color: #cbd5e1;"></i>
+                        <p>Nenhuma conversa recente.<br>Vá em <b>Encontrar Trocas</b> para começar!</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var match in Model)
+                    {
+                        <a href="/Chat/Conversar?usuarioId=@match.UsuarioId" class="match-item" style="text-decoration: none; color: inherit;">
+                            <div class="avatar-wrapper">
+                                <img src="@match.FotoUrl" alt="@match.Nome" style="object-fit: cover;">
+                            </div>
+                            <strong>@match.Nome</strong>
+                            <span class="match-count">@match.TotalMensagens msgs</span>
+                        </a>
+                    }
+                }
+            </div>
+        </section>
+
+    </div>
+</main>

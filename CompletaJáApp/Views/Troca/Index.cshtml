@@ -1,0 +1,67 @@
+﻿@model IEnumerable<CompletaJáApp.Controllers.MatchViewModel>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/trocas.css" asp-append-version="true" />
+}
+
+<main class="content match-content">
+    <div class="match-header">
+        <h2>Trocas Compatíveis</h2>
+        <p>Encontramos colecionadores que têm o que você procura.</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div style="text-align: center; padding: 40px; color: #94a3b8;">
+            <i class="fa-solid fa-handshake-slash" style="font-size: 3rem; margin-bottom: 15px;"></i>
+            <p>Nenhuma troca compatível nos seus locais frequentes por enquanto.</p>
+            <p style="font-size: 0.8rem;">Tente adicionar mais locais ou atualizar sua coleção!</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var match in Model)
+        {
+            <div class="match-card">
+                <div class="match-profile">
+                    <div class="profile-info">
+                        <img src="@match.FotoUrl" class="profile-img">
+                        <div class="profile-text">
+                            <h4>@match.Nome</h4>
+                            <span><i class="fa-solid fa-location-dot"></i> @match.LocalNome</span>
+                        </div>
+                    </div>
+                    <div class="match-pct high">@match.PercentualMatch% MATCH</div>
+                </div>
+
+                <div class="comparison-grid">
+                    @* Coluna: O que o outro usuário tem (E eu preciso) *@
+                    <div class="comparison-col">
+                        <span class="col-title positive">ELE TEM (PRECISO)</span>
+                        <div class="sticker-list">
+                            @foreach (var fig in match.FigurinhasParaMim)
+                            {
+                                <div class="sticker-item">@fig.Codigo</div>
+                            }
+                        </div>
+                    </div>
+
+                    @* Coluna: O que eu tenho (E ele quer) *@
+                    <div class="comparison-col">
+                        <span class="col-title">VOCÊ TEM (ELE QUER)</span>
+                        <div class="sticker-list">
+                            @foreach (var fig in match.FigurinhasParaEle)
+                            {
+                                <div class="sticker-item">@fig.Codigo</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <a href="/Chat/Conversar?usuarioId=@match.UsuarioId" class="btn-chat">
+                    <i class="fa-regular fa-comment-dots"></i> Iniciar Conversa
+                </a>
+            </div>
+        }
+    }
+</main>

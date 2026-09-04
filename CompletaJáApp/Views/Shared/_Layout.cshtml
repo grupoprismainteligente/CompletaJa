@@ -1,0 +1,98 @@
+﻿@using Microsoft.AspNetCore.Http
+@{
+    var fotoUsuario = Context.Session.GetString("FotoUsuario") ?? "/images/default-avatar.png";
+}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CompletaJá</title>
+
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <style>
+            /* Estilo do botão de voltar */
+            .btn-voltar-layout {
+                background: none;
+                border: none;
+                color: #6B7280;
+                font-size: 1.2rem;
+                cursor: pointer;
+                margin-right: 12px;
+                padding: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: color 0.2s, transform 0.1s;
+            }
+
+                .btn-voltar-layout:hover {
+                    color: #1D58E6;
+                    transform: scale(1.1);
+                }
+    </style>
+
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+
+    <div class="app-container">
+
+        <header class="top-header">
+            <div class="user-info">
+                <button type="button" onclick="history.back()" class="btn-voltar-layout">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
+                <a href="/Usuario/Editar" style="display: flex; align-items: center; text-decoration: none;">
+                    <img src="@fotoUsuario" alt="Perfil" class="avatar-top" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer; transition: transform 0.2s;">
+                </a>
+                <span class="logo-text">CompletaJá</span>
+            </div>
+            <div class="header-actions">
+                <a href="/Home/Sair" onclick="return confirm('Tem certeza que deseja sair do sistema?');" class="btn-sair" style="text-decoration:none; color:#6B7280; font-size:13px; font-weight:600; display:flex; gap:5px; align-items:center;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
+                </a>
+                <i class="fa-regular fa-bell icon-bell"></i>
+            </div>
+        </header>
+
+        @RenderBody()
+
+        <nav class="bottom-nav">
+            <a href="/Home" class="nav-item">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="/Album" class="nav-item">
+                <i class="fa-solid fa-book-open"></i>
+                <span>Álbuns</span>
+            </a>
+            <a href="/Locais" class="nav-item">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>Locais</span>
+            </a>
+            <a href="/Troca" class="nav-item">
+                <i class="fa-solid fa-comments"></i>
+                <span>Trocas</span>
+            </a>
+        </nav>
+
+    </div>
+
+    <div vw class="enabled">
+        <div vw-access-button class="active"></div>
+        <div vw-plugin-wrapper>
+            <div class="vw-plugin-top-wrapper"></div>
+        </div>
+    </div>
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+    <script>
+        new window.VLibras.Widget('https://vlibras.gov.br/app');
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

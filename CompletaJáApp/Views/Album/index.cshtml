@@ -1,0 +1,74 @@
+﻿@model IEnumerable<CompletaJaApp.Models.Album>
+@{
+    ViewData["Title"] = "Meus Álbuns";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/locais.css" asp-append-version="true" />
+    <style>
+        /* 1. Força a remoção de qualquer sublinhado */
+        .local-card { text-decoration: none !important; }
+        .local-card h3 { text-decoration: none !important; }
+
+        /* 2. Garante o layout robusto idêntico ao de Locais */
+        @@media (min-width: 768px) {
+            .local-list { 
+                display: grid !important; 
+                grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)) !important; 
+                gap: 20px !important; 
+            }
+        }
+
+        /* 3. Ajuste para telas pequenas (evita que o texto fique esmagado) */
+        @@media (max-width: 480px) {
+            .local-card { flex-direction: column !important; text-align: center; }
+            .local-img { width: 100% !important; height: 180px !important; }
+            .local-details { align-items: center !important; width: 100% !important; }
+        }
+    </style>
+}
+
+<main class="content local-content">
+    <div class="local-header" style="text-align: center; margin-bottom: 30px;">
+        <h2>Meus Álbuns</h2>
+        <p>Suas coleções ativas de figurinhas</p>
+    </div>
+
+    <div style="display: flex; justify-content: center; margin-bottom: 25px;">
+        <a href="/Album/Buscar" class="btn-add-local" style="max-width: 320px; text-decoration: none;">
+            <i class="fa-solid fa-book-open"></i> Adicionar Novo Álbum
+        </a>
+    </div>
+
+    <div class="search-container" style="max-width: 600px; margin: 0 auto 35px auto;">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="inputBuscaAlbum" placeholder="Filtrar meus álbuns..." onkeyup="filtrarAlbuns()">
+    </div>
+
+    <div class="local-list">
+        @foreach (var album in Model)
+        {
+            <a href="/Figurinha/Index?albumId=@album.Id" class="local-card">
+                <img src="@album.CapaUrl" class="local-img" alt="@album.Nome">
+                <div class="local-details">
+                    <h3>@album.Nome</h3>
+                    <div class="users-badge" style="margin-top: 4px;">
+                        <i class="fa-regular fa-clone"></i> @album.QuantidadeTotalFigurinhas figurinhas
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        function filtrarAlbuns() {
+            const termo = document.getElementById('inputBuscaAlbum').value.toLowerCase().trim();
+            document.querySelectorAll('.local-card').forEach(card => {
+                const titulo = card.querySelector('h3').innerText.toLowerCase();
+                card.style.display = titulo.includes(termo) ? 'flex' : 'none';
+            });
+        }
+    </script>
+}

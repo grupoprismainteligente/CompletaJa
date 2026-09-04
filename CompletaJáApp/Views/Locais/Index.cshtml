@@ -1,0 +1,63 @@
+﻿@model IEnumerable<CompletaJaApp.Models.Local>
+@{
+    ViewData["Title"] = "Meus Locais";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/locais.css" asp-append-version="true" />
+    <style>
+        @@media (max-width: 600px) {
+            .local-card { flex-direction: column !important; text-align: center !important; }
+            .local-img { width: 100% !important; height: 180px !important; margin-bottom: 10px !important; }
+            .local-details { align-items: center !important; width: 100% !important; }
+        }
+    </style>
+}
+
+<main class="content local-content">
+    <div class="local-header" style="text-align: center; margin-bottom: 30px;">
+        <h2>Meus Locais</h2>
+        <p>Pontos de encontro onde você realiza trocas</p>
+    </div>
+
+    <div style="display: flex; justify-content: center; margin-bottom: 25px;">
+        <a href="/Locais/Buscar" class="btn-add-local" style="max-width: 320px; text-decoration: none;">
+            <i class="fa-solid fa-magnifying-glass-location"></i> Adicionar Novo Local
+        </a>
+    </div>
+
+    <div class="search-container" style="max-width: 500px; margin: 0 auto 35px auto;">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="inputBuscaLocal" placeholder="Filtrar locais..." onkeyup="filtrarLocais()">
+    </div>
+
+    <div class="local-list">
+        @foreach (var local in Model)
+        {
+            <a href="/Locais/Detalhes?id=@local.Id" class="local-card" style="text-decoration: none !important;">
+                <img src="@local.FotoUrl" class="local-img" alt="@local.Nome">
+                <div class="local-details">
+                    <h3>@local.Nome</h3>
+                    <div class="local-area">
+                        <i class="fa-solid fa-location-dot"></i> @local.Endereco
+                    </div>
+                    <div class="users-badge" style="margin-top: 4px;">
+                        <i class="fa-solid fa-users"></i> @local.UsuariosVinculados colecionadores
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+</main>
+
+@section Scripts {
+    <script>
+        function filtrarLocais() {
+            const termo = document.getElementById('inputBuscaLocal').value.toLowerCase().trim();
+            document.querySelectorAll('.local-card').forEach(card => {
+                const titulo = card.querySelector('h3').innerText.toLowerCase();
+                card.style.display = titulo.includes(termo) ? 'flex' : 'none';
+            });
+        }
+    </script>
+}

@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "Cadastrar Novo Local";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/add-local.css" asp-append-version="true" />
+    <style>
+        .btn-back-content {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #1e293b;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .container-cadastro-central {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            border: 1px solid #f1f5f9;
+        }
+    </style>
+}
+
+<main class="content add-local-content">
+
+   
+    <div class="container-cadastro-central">
+        <div class="create-header" style="margin-bottom: 25px; text-align: center;">
+            <h3 style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">Cadastrar Novo Ponto de Troca</h3>
+            <p style="color: #64748b; font-size: 0.9rem;">Insira os dados corretos para ajudar a comunidade a se encontrar</p>
+        </div>
+
+        <form id="formCriarLocal" method="post" action="/Locais/Criar" enctype="multipart/form-data">
+
+            <div class="upload-placeholder" onclick="document.getElementById('inputFoto').click()" style="cursor: pointer; position: relative; overflow: hidden; height: 140px; background: #f8fafc; border: 2px dashed #1D58E6; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                <img id="previewFoto" src="" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;" />
+                <div id="uploadContent" style="position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; color: #1D58E6;">
+                    <i class="fa-solid fa-camera-retro" style="font-size: 2rem; margin-bottom: 5px;"></i>
+                    <span style="font-size: 0.85rem; font-weight: 700; text-align: center;">Adicionar Imagem do Local</span>
+                </div>
+                <input type="file" id="inputFoto" name="Foto" accept="image/*" style="display: none;" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">Nome do Ponto de Troca</label>
+                <input type="text" id="inputNomeLocal" name="Nome" required placeholder="Ex: Banca Central de Osasco" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">CNPJ do Estabelecimento</label>
+                <input type="text" id="inputCNPJ" name="CNPJ" required placeholder="00.000.000/0000-00" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">Tipo de Local</label>
+                <select id="selectTipoLocal" name="Tipo" required style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; background: white;">
+                    <option value="" disabled selected>Selecione uma categoria...</option>
+                    <option value="Banca">Banca de Jornal / Revistaria</option>
+                    <option value="Shopping">Shopping Center</option>
+                    <option value="Loja">Loja Comercial / Conveniência</option>
+                    <option value="Livraria">Livraria</option>
+                    <option value="Outro">Outro Estabelecimento</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">Endereço Completo</label>
+                <input type="text" id="inputEndereco" name="Endereco" required placeholder="Ex: Av. dos Autonomistas, 1400 - Industrial, Osasco - SP" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 25px;">
+                <label style="font-weight: 700; font-size: 0.85rem; color: #475569; display: block; margin-bottom: 5px;">Área Interna de Troca (Descrição)</label>
+                <input type="text" id="inputArea" name="AreaTroca" required placeholder="Ex: Mesas amarelas na Praça de alimentação ao lado da Livraria" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px;">
+            </div>
+
+            <button type="submit" class="btn-add-local" style="width: 100%; background: #1D58E6; color: white; padding: 14px; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer;">
+                <i class="fa-solid fa-location-dot"></i> Publicar Ponto de Troca
+            </button>
+        </form>
+    </div>
+</main>
+
+@section Scripts {
+    <script src="~/js/locais-add.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,213 @@
+﻿/* Configurações de espaçamento da seção principal */
+.album-content {
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+/* Tipografia e margens do cabeçalho */
+.album-header h2 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #111;
+    margin-bottom: 5px;
+}
+
+.album-header p {
+    font-size: 14px;
+    color: #6B7280;
+    margin-bottom: 20px;
+}
+
+/* Estilização do botão de ação principal */
+.btn-add-album {
+    width: 100%;
+    background-color: #1D58E6;
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 25px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+    .btn-add-album:hover {
+        background-color: #1545B8;
+        transform: scale(1.02);
+    }
+
+/* Layout e bordas do campo de pesquisa */
+.search-container {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    padding: 12px 15px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    gap: 10px;
+}
+
+    .search-container i {
+        color: #9CA3AF;
+    }
+
+    .search-container input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+    }
+
+/* Estrutura da lista e animações do card */
+.album-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding-bottom: 50px;
+}
+
+.album-card {
+    background: white;
+    border-radius: 20px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid #F3F4F6;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .album-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+/* Ajustes de proporção da imagem */
+.album-img {
+    width: 100%;
+    height: 160px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Posicionamento de títulos e selos informativos */
+.album-details {
+    position: relative;
+}
+
+    .album-details h3 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #111;
+        padding-right: 90px;
+    }
+
+.badge {
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 5px 10px;
+    border-radius: 8px;
+}
+
+.badge-popular {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.badge-ativa {
+    background: #DBEAFE;
+    color: #1D58E6;
+}
+
+/* Contadores e textos secundários */
+.album-count {
+    font-size: 13px;
+    color: #6B7280;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+/* Componentes da barra de progresso */
+.prog-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1D58E6;
+    margin-bottom: 8px;
+    margin-top: 10px;
+}
+
+.prog-bg {
+    width: 100%;
+    height: 8px;
+    background: #E6EFFF;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.prog-fill {
+    height: 100%;
+    background: #1D58E6;
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+}
+
+/* Ajustes de layout para dispositivos desktop */
+@media (min-width: 768px) {
+    .album-content {
+        display: block;
+        grid-template-columns: 1fr auto;
+        gap: 20px;
+        align-items: center;
+    }
+
+    .album-header {
+        grid-column: 1;
+        grid-row: 1;
+        margin-bottom: 0;
+    }
+
+    .btn-add-album {
+        grid-column: 2;
+        grid-row: 1;
+        width: 220px;
+        margin-bottom: 0;
+    }
+
+    .search-container {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        margin-bottom: 20px;
+    }
+
+    .album-list {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+        max-width: 1000px;
+        margin: 0 auto;
+        justify-content: center;
+    }
+
+    .album-card {
+        max-width: 380px;
+        margin: 0 auto;
+        width: 100%;
+    }
+}

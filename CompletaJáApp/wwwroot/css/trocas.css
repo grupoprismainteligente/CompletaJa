@@ -1,0 +1,172 @@
+﻿/* ==========================================================================
+   SISTEMA COMPLETAJÁ - MÓDULO DE TROCAS (MATCH INTELLIGENTE)
+   Estilização dos cards de match, badges de porcentagem e listas de cromos.
+   ========================================================================== */
+
+.match-content {
+    padding-top: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.match-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+    .match-header h2 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 5px;
+    }
+
+    .match-header p {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+/* Card Principal do Match */
+.match-card {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    border: 1px solid #f1f5f9;
+}
+
+/* Cabeçalho do Perfil no Card */
+.match-profile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-img {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #1D58E6;
+}
+
+.profile-text h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.profile-text span {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.match-pct {
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+    .match-pct.high {
+        background: #fef3c7;
+        color: #b45309;
+    }
+/* Destaque para match alto */
+
+/* Área de Comparação de Figurinhas */
+.comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.comparison-col {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 16px;
+}
+
+.col-title {
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 10px;
+    display: block;
+}
+
+    .col-title.positive {
+        color: #1D58E6;
+    }
+
+/* Grupos de Álbuns dentro do Match */
+.album-group {
+    margin-bottom: 12px;
+}
+
+.album-name-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #475569;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.sticker-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.sticker-item {
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #1D58E6;
+}
+
+/* Botão de Ação (Chat) */
+.btn-chat {
+    width: 100%;
+    background: #eff6ff;
+    color: #1D58E6;
+    border: none;
+    padding: 14px;
+    border-radius: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    text-decoration: none;
+}
+
+    .btn-chat:hover {
+        background: #1D58E6;
+        color: white;
+    }
