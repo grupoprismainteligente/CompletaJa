@@ -5,12 +5,20 @@ using CompletaJaApp.Hubs; // ADICIONADO 1: Importa a pasta do seu ChatHub
 using Microsoft.AspNetCore.Identity;
 using CompletaJaApp.Models;
 using Microsoft.AspNetCore.Http;
+using CompletaJaApp.Services;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. ADICIONANDO OS SERVIÇOS
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
+builder.Services.AddScoped<ImagemService>();
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 6 * 1024 * 1024;
+});
 
 // Configurando a conexão com o Banco de Dados SQL Server
 builder.Services.AddDbContext<CompletaJaContext>(options =>

@@ -1,91 +1,124 @@
 ﻿using CompletaJaApp.Data;
 using CompletaJaApp.Models;
-using Microsoft.AspNetCore.Hosting;
+using CompletaJaApp.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using System.Linq;
+using System;
+using System.Threading.Tasks;
 
 namespace CompletaJáApp.Controllers
 {
     public class UsuarioController : Controller
     {
         private readonly CompletaJaContext _context;
-        private readonly IWebHostEnvironment _environment;
+        private readonly ImagemService _imagemService;
         private readonly IPasswordHasher<Usuario> _passwordHasher;
 
         public UsuarioController(
             CompletaJaContext context,
-            IWebHostEnvironment environment,
+            ImagemService imagemService,
             IPasswordHasher<Usuario> passwordHasher)
         {
             _context = context;
-            _environment = environment;
+            _imagemService = imagemService;
             _passwordHasher = passwordHasher;
         }
 
-        // GET: Exibe a tela de perfil preenchida
+        // ==========================================
+        // 1. EXIBE A TELA DE EDIÇÃO DO PERFIL
+        // ==========================================
         [HttpGet]
         public IActionResult Editar()
         {
-            int? meuId = HttpContext.Session.GetInt32("UsuarioId");
-            if (meuId == null) return RedirectToAction("Login", "Home");
+            int? meuId =
+                HttpContext.Session.GetInt32("UsuarioId");
 
-            var usuario = _context.Usuarios.Find(meuId.Value);
-            if (usuario == null) return NotFound();
+            if (meuId == null)
+            {
+                return RedirectToAction(
+                    "Index",
+                    "Account");
+            }
+
+            var usuario =
+                _context.Usuarios.Find(meuId.Value);
+
+            if (usuario == null)
+            {
+                return NotFound();
+            }
 
             return View(usuario);
         }
 
-        // POST: Recebe apenas a nova senha e a nova foto para salvar com segurança
-        // CORREÇÃO: Parâmetros tipados como anuláveis (?) para bater com as configurações do C# moderno
+        // ==========================================
+        // 2. SALVA A NOVA SENHA E A NOVA FOTO
+        // ==========================================
         [HttpPost]
-        public IActionResult Salvar(string? NovaSenha, IFormFile? NovaFoto)
+        public async Task<IActionResult> Salvar(
+            string? NovaSenha,
+            IFormFile? NovaFoto)
         {
-            int? meuId = HttpContext.Session.GetInt32("UsuarioId");
-            if (meuId == null) return RedirectToAction("Login", "Home");
+            int? meuId =
+                HttpContext.Session.GetInt32("UsuarioId");
 
-            var usuario = _context.Usuarios.Find(meuId.Value);
-            if (usuario == null) return NotFound();
-
-            // 1. CORREÇÃO: Atualiza a propriedade 'SenhaHash' (nome idêntico ao mapeado na Model)
-            if (!string.IsNullOrWhiteSpace(NovaSenha))
+            if (meuId == null)
             {
-                usuario.SenhaHash = _passwordHasher.HashPassword(usuario, NovaSenha);
+                return RedirectToAction(
+                    "Index",
+                    "Account");
             }
 
-            // 2. Processa o upload físico da imagem se enviada
-            if (NovaFoto != null && NovaFoto.Length > 0)
+            var usuario =
+                _context.Usuarios.Find(meuId.Value);
+
+            if (usuario == null)
             {
-                // Garante que a pasta física de perfis exista no servidor
-                string pastaImagens = Path.Combine(_environment.WebRootPath, "uploads", "perfis");
-                if (!Directory.Exists(pastaImagens))
+                return NotFound();
+            }
+
+            // Se uma nova senha foi preenchida,
+            // ela será protegida antes de ser salva.
+            if (!string.IsNullOrWhiteSpace(NovaSenha))
+            {
+                usuario.SenhaHash =
+                    _passwordHasher.HashPassword(
+                        usuario,
+                        NovaSenha);
+            }
+
+            // Se uma nova foto foi selecionada,
+            // ela será validada pelo ImagemService.
+            if (NovaFoto != null &&
+                NovaFoto.Length > 0)
+            {
+                try
                 {
-                    Directory.CreateDirectory(pastaImagens);
+                    string novaFotoUrl =
+                        await _imagemService.SalvarAsync(
+                            NovaFoto,
+                            "perfis");
+
+                    usuario.FotoUrl = novaFotoUrl;
+
+                    HttpContext.Session.SetString(
+                        "FotoUsuario",
+                        novaFotoUrl);
                 }
-
-                // Padroniza o nome do arquivo usando o ID do usuário para nunca duplicar ou quebrar links
-                string nomeArquivo = $"perfil_{usuario.Id}{Path.GetExtension(NovaFoto.FileName)}";
-                string caminhoCompleto = Path.Combine(pastaImagens, nomeArquivo);
-
-                // Grava o arquivo físico em disco
-                using (var stream = new FileStream(caminhoCompleto, FileMode.Create))
+                catch (InvalidOperationException ex)
                 {
-                    NovaFoto.CopyTo(stream);
+                    TempData["MensagemErro"] =
+                        ex.Message;
+
+                    return RedirectToAction("Editar");
                 }
-
-                // Grava o caminho virtual relativo no registro do banco
-                usuario.FotoUrl = $"/uploads/perfis/{nomeArquivo}";
-
-                // Atualiza instantaneamente a variável de Sessão para atualizar o Header global do _Layout
-                HttpContext.Session.SetString("FotoUsuario", usuario.FotoUrl);
             }
 
             _context.SaveChanges();
 
-            // Define uma mensagem de feedback que dura apenas um ciclo de renderização
-            TempData["MensagemSucesso"] = "Perfil updated com sucesso!";
+            TempData["MensagemSucesso"] =
+                "Perfil atualizado com sucesso!";
 
             return RedirectToAction("Editar");
         }

@@ -1,82 +1,124 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using CompletaJaApp.Data;
+﻿using CompletaJaApp.Data;
 using CompletaJaApp.Models;
-using Microsoft.AspNetCore.Hosting;
+using CompletaJaApp.Services;
 using Microsoft.AspNetCore.Http;
-using System.IO;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using System;
 
 namespace CompletaJáApp.Controllers
 {
     public class AlbumController : Controller
     {
         private readonly CompletaJaContext _context;
-        private readonly IWebHostEnvironment _env;
+        private readonly ImagemService _imagemService;
 
-        public AlbumController(CompletaJaContext context, IWebHostEnvironment env)
+        public AlbumController(
+            CompletaJaContext context,
+            ImagemService imagemService)
         {
             _context = context;
-            _env = env;
+            _imagemService = imagemService;
         }
 
         // ==========================================
-        // 1. MEUS ÁLBUNS (Index) - Apenas os vinculados
+        // 1. MEUS ÁLBUNS
+        // Mostra apenas os álbuns vinculados ao usuário
         // ==========================================
         public IActionResult Index()
         {
-            ViewBag.FotoUsuario = HttpContext.Session.GetString("FotoUsuario") ?? "/images/default-avatar.png";
-            int usuarioId = HttpContext.Session.GetInt32("UsuarioId")!.Value;
+            ViewBag.FotoUsuario =
+                HttpContext.Session.GetString("FotoUsuario")
+                ?? "/images/default-avatar.png";
 
-            var meusAlbunsIds = _context.UsuariosAlbuns
-                .Where(ua => ua.UsuarioId == usuarioId)
-                .Select(ua => ua.AlbumId)
-                .ToList();
+            int usuarioId =
+                HttpContext.Session
+                    .GetInt32("UsuarioId")!
+                    .Value;
 
-            var meusAlbuns = _context.Albuns
-                .Where(a => meusAlbunsIds.Contains(a.Id))
-                .OrderByDescending(a => a.UsuariosVinculados)
-                .ToList();
+            var meusAlbunsIds =
+                _context.UsuariosAlbuns
+                    .Where(ua =>
+                        ua.UsuarioId == usuarioId)
+                    .Select(ua => ua.AlbumId)
+                    .ToList();
+
+            var meusAlbuns =
+                _context.Albuns
+                    .Where(a =>
+                        meusAlbunsIds.Contains(a.Id))
+                    .OrderByDescending(
+                        a => a.UsuariosVinculados)
+                    .ToList();
 
             return View(meusAlbuns);
         }
 
         // ==========================================
-        // 2. CATÁLOGO GLOBAL (Buscar) - Classificado por popularidade
+        // 2. CATÁLOGO GLOBAL
+        // Mostra todos os álbuns existentes
         // ==========================================
         public IActionResult Buscar()
         {
-            ViewBag.FotoUsuario = HttpContext.Session.GetString("FotoUsuario") ?? "/images/default-avatar.png";
-            int usuarioId = HttpContext.Session.GetInt32("UsuarioId")!.Value;
+            ViewBag.FotoUsuario =
+                HttpContext.Session.GetString("FotoUsuario")
+                ?? "/images/default-avatar.png";
 
-            ViewBag.MeusAlbunsIds = _context.UsuariosAlbuns
-                .Where(ua => ua.UsuarioId == usuarioId)
-                .Select(ua => ua.AlbumId)
-                .ToList();
+            int usuarioId =
+                HttpContext.Session
+                    .GetInt32("UsuarioId")!
+                    .Value;
 
-            // CLASSIFICAÇÃO: Ordena do álbum com mais usuários vinculados para o menor
-            var todosAlbuns = _context.Albuns
-                .OrderByDescending(a => a.UsuariosVinculados)
-                .ToList();
+            ViewBag.MeusAlbunsIds =
+                _context.UsuariosAlbuns
+                    .Where(ua =>
+                        ua.UsuarioId == usuarioId)
+                    .Select(ua => ua.AlbumId)
+                    .ToList();
+
+            var todosAlbuns =
+                _context.Albuns
+                    .OrderByDescending(
+                        a => a.UsuariosVinculados)
+                    .ToList();
 
             return View(todosAlbuns);
         }
 
         // ==========================================
-        // 3. VINCULAR USUÁRIO AO ÁLBUM EXISTENTE
+        // 3. VINCULAR USUÁRIO A UM ÁLBUM EXISTENTE
         // ==========================================
         [HttpPost]
         public IActionResult Vincular(int albumId)
         {
-            int usuarioId = HttpContext.Session.GetInt32("UsuarioId")!.Value;
+            int usuarioId =
+                HttpContext.Session
+                    .GetInt32("UsuarioId")!
+                    .Value;
 
-            if (!_context.UsuariosAlbuns.Any(ua => ua.UsuarioId == usuarioId && ua.AlbumId == albumId))
+            bool jaEstaVinculado =
+                _context.UsuariosAlbuns.Any(
+                    ua =>
+                        ua.UsuarioId == usuarioId &&
+                        ua.AlbumId == albumId);
+
+            if (!jaEstaVinculado)
             {
-                _context.UsuariosAlbuns.Add(new UsuarioAlbum { UsuarioId = usuarioId, AlbumId = albumId });
+                _context.UsuariosAlbuns.Add(
+                    new UsuarioAlbum
+                    {
+                        UsuarioId = usuarioId,
+                        AlbumId = albumId
+                    });
 
-                var album = _context.Albuns.Find(albumId);
-                if (album != null) album.UsuariosVinculados += 1;
+                var album =
+                    _context.Albuns.Find(albumId);
+
+                if (album != null)
+                {
+                    album.UsuariosVinculados += 1;
+                }
 
                 _context.SaveChanges();
             }
@@ -85,85 +127,158 @@ namespace CompletaJáApp.Controllers
         }
 
         // ==========================================
-        // 4. FORMULÁRIO DE CADASTRO (Add)
+        // 4. EXIBE O FORMULÁRIO DE CADASTRO
         // ==========================================
         public IActionResult Add()
         {
-            ViewBag.FotoUsuario = HttpContext.Session.GetString("FotoUsuario") ?? "/images/default-avatar.png";
+            ViewBag.FotoUsuario =
+                HttpContext.Session.GetString("FotoUsuario")
+                ?? "/images/default-avatar.png";
+
             return View();
         }
 
         // ==========================================
-        // 5. PROCESSA A CRIAÇÃO DO ÁLBUM GLOBAL
+        // 5. CRIA UM NOVO ÁLBUM
         // ==========================================
         [HttpPost]
-        public async Task<IActionResult> Criar(string Nome, int TotalFigurinhas, IFormFile Capa)
+        public async Task<IActionResult> Criar(
+            string Nome,
+            int TotalFigurinhas,
+            IFormFile? Capa)
         {
-            if (string.IsNullOrWhiteSpace(Nome) || TotalFigurinhas <= 0 || Capa == null || Capa.Length == 0)
+            if (string.IsNullOrWhiteSpace(Nome) ||
+                TotalFigurinhas <= 0 ||
+                Capa == null ||
+                Capa.Length == 0)
             {
+                TempData["ErroUpload"] =
+                    "Preencha os dados e selecione uma imagem para o álbum.";
+
                 return RedirectToAction("Add");
             }
 
-            string extensao = Path.GetExtension(Capa.FileName);
-            string nomeArquivo = Guid.NewGuid().ToString() + extensao;
-            string caminhoPasta = Path.Combine(_env.WebRootPath, "uploads", "albuns");
+            string capaUrl;
 
-            if (!Directory.Exists(caminhoPasta)) Directory.CreateDirectory(caminhoPasta);
-
-            string caminhoCompleto = Path.Combine(caminhoPasta, nomeArquivo);
-            using (var stream = new FileStream(caminhoCompleto, FileMode.Create))
+            try
             {
-                await Capa.CopyToAsync(stream);
+                capaUrl =
+                    await _imagemService.SalvarAsync(
+                        Capa,
+                        "albuns");
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErroUpload"] =
+                    ex.Message;
+
+                return RedirectToAction("Add");
             }
 
             var novoAlbum = new Album
             {
                 Nome = Nome,
-                QuantidadeTotalFigurinhas = TotalFigurinhas,
-                CapaUrl = "/uploads/albuns/" + nomeArquivo,
-                UsuariosVinculados = 1 // Nasce com 1 vínculo (o criador)
+                QuantidadeTotalFigurinhas =
+                    TotalFigurinhas,
+                CapaUrl = capaUrl,
+                UsuariosVinculados = 1
             };
+
             _context.Albuns.Add(novoAlbum);
             _context.SaveChanges();
 
-            int usuarioId = HttpContext.Session.GetInt32("UsuarioId")!.Value;
-            _context.UsuariosAlbuns.Add(new UsuarioAlbum { UsuarioId = usuarioId, AlbumId = novoAlbum.Id });
+            int usuarioId =
+                HttpContext.Session
+                    .GetInt32("UsuarioId")!
+                    .Value;
+
+            _context.UsuariosAlbuns.Add(
+                new UsuarioAlbum
+                {
+                    UsuarioId = usuarioId,
+                    AlbumId = novoAlbum.Id
+                });
+
             _context.SaveChanges();
 
             return RedirectToAction("Index");
         }
 
         // ==========================================
-        // 6. VALIDAÇÃO DE DUPLICIDADE (Algoritmo Restaurado)
+        // 6. VERIFICA SE JÁ EXISTE UM ÁLBUM PARECIDO
         // ==========================================
         [HttpPost]
-        public IActionResult VerificarDuplicidade(string nome, int quantidade)
+        public IActionResult VerificarDuplicidade(
+            string nome,
+            int quantidade)
         {
-            if (string.IsNullOrWhiteSpace(nome) || quantidade <= 0)
-                return Json(new { duplicado = false });
+            if (string.IsNullOrWhiteSpace(nome) ||
+                quantidade <= 0)
+            {
+                return Json(
+                    new
+                    {
+                        duplicado = false
+                    });
+            }
 
-            var albunsMesmaQuantidade = _context.Albuns
-                .Where(a => a.QuantidadeTotalFigurinhas == quantidade)
-                .ToList();
+            var albunsMesmaQuantidade =
+                _context.Albuns
+                    .Where(a =>
+                        a.QuantidadeTotalFigurinhas ==
+                        quantidade)
+                    .ToList();
 
             if (!albunsMesmaQuantidade.Any())
-                return Json(new { duplicado = false });
-
-            var palavrasNovoNome = nome.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                                       .Where(p => p.Length > 2).ToList();
-
-            foreach (var album in albunsMesmaQuantidade)
             {
-                var palavrasAlbumBanco = album.Nome.ToLower().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                                             .Where(p => p.Length > 2).ToList();
+                return Json(
+                    new
+                    {
+                        duplicado = false
+                    });
+            }
 
-                if (palavrasNovoNome.Intersect(palavrasAlbumBanco).Any())
+            var palavrasNovoNome =
+                nome.ToLower()
+                    .Split(
+                        new[] { ' ' },
+                        StringSplitOptions.RemoveEmptyEntries)
+                    .Where(p => p.Length > 2)
+                    .ToList();
+
+            foreach (var album in
+                     albunsMesmaQuantidade)
+            {
+                var palavrasAlbumBanco =
+                    album.Nome.ToLower()
+                        .Split(
+                            new[] { ' ' },
+                            StringSplitOptions
+                                .RemoveEmptyEntries)
+                        .Where(p => p.Length > 2)
+                        .ToList();
+
+                bool possuiPalavraIgual =
+                    palavrasNovoNome
+                        .Intersect(palavrasAlbumBanco)
+                        .Any();
+
+                if (possuiPalavraIgual)
                 {
-                    return Json(new { duplicado = true, nomeSemelhante = album.Nome });
+                    return Json(
+                        new
+                        {
+                            duplicado = true,
+                            nomeSemelhante = album.Nome
+                        });
                 }
             }
 
-            return Json(new { duplicado = false });
+            return Json(
+                new
+                {
+                    duplicado = false
+                });
         }
     }
 }

@@ -2,232 +2,442 @@
     ViewData["Title"] = "CompletaJá - Login";
     Layout = null;
 }
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>@ViewData["Title"]</title>
+
     <link rel="stylesheet" href="~/css/login.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
+
 <body>
     <div class="app-container">
+
         <div class="header">
             <div class="logo-icon">
                 <i class="fa-solid fa-layer-group"></i>
             </div>
+
             <h1>CompletaJá</h1>
             <p>Complete seu álbum com amigos!</p>
         </div>
 
         <div class="form-container">
+
             <div class="toggle-box">
-                <button id="btn-login" class="toggle-btn active" onclick="switchTab('login')">Entrar</button>
-                <button id="btn-signup" class="toggle-btn" onclick="switchTab('signup')">Criar Conta</button>
+                <button id="btn-login"
+                        class="toggle-btn active"
+                        type="button"
+                        onclick="switchTab('login')">
+                    Entrar
+                </button>
+
+                <button id="btn-signup"
+                        class="toggle-btn"
+                        type="button"
+                        onclick="switchTab('signup')">
+                    Criar Conta
+                </button>
             </div>
 
-            <form id="form-login" action="/Account/Login" method="post">
+            @if (ViewBag.Erro != null)
+            {
+                <div style="
+                    background-color: #FEE2E2;
+                    color: #DC2626;
+                    padding: 10px;
+                    border-radius: 10px;
+                    text-align: center;
+                    margin-bottom: 15px;
+                    font-size: 14px;
+                    font-weight: 600;">
 
-                @if (ViewBag.Erro != null)
-                {
-                    <div style="background-color: #FEE2E2; color: #DC2626; padding: 10px; border-radius: 10px; text-align: center; margin-bottom: 15px; font-size: 14px; font-weight: 600;">
-                        <i class="fa-solid fa-circle-exclamation"></i> @ViewBag.Erro
-                    </div>
-                }
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    @ViewBag.Erro
+                </div>
+            }
+
+            @if (TempData["Sucesso"] != null)
+            {
+                <div style="
+                    background-color: #DCFCE7;
+                    color: #166534;
+                    padding: 10px;
+                    border-radius: 10px;
+                    text-align: center;
+                    margin-bottom: 15px;
+                    font-size: 14px;
+                    font-weight: 600;">
+
+                    <i class="fa-solid fa-circle-check"></i>
+                    @TempData["Sucesso"]
+                </div>
+            }
+
+            <form id="form-login"
+                  action="/Account/Login"
+                  method="post">
 
                 <div class="input-group">
                     <label>E-mail</label>
+
                     <div class="input-field">
                         <i class="fa-regular fa-envelope"></i>
-                        <input type="email" name="Email" placeholder="seu@email.com" required />
+
+                        <input type="email"
+                               name="Email"
+                               placeholder="seu@email.com"
+                               required />
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label>Senha</label>
+
                     <div class="input-field">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="login-pwd" name="Senha" placeholder="••••••••" required />
-                        <i class="fa-regular fa-eye toggle-pwd" onclick="togglePassword('login-pwd')"></i>
+
+                        <input type="password"
+                               id="login-pwd"
+                               name="Senha"
+                               placeholder="••••••••"
+                               required />
+
+                        <i class="fa-regular fa-eye toggle-pwd"
+                           onclick="togglePassword('login-pwd')"></i>
                     </div>
                 </div>
 
                 <div class="forgot-pwd">
-                    <a href="/Account/ForgotPassword">Esqueceu a senha?</a>
+                    <a href="/Account/ForgotPassword">
+                        Esqueceu a senha?
+                    </a>
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    Entrar <i class="fa-solid fa-arrow-right"></i>
+                <button type="submit"
+                        class="btn-submit">
+
+                    Entrar
+                    <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
 
-            <form id="form-signup" asp-controller="Account" asp-action="Register" method="post" enctype="multipart/form-data" onsubmit="return validarFormularioCadastro()" style="display: none;">
+            <form id="form-signup"
+                  asp-controller="Account"
+                  asp-action="Register"
+                  method="post"
+                  enctype="multipart/form-data"
+                  onsubmit="return validarFormularioCadastro()"
+                  style="display: none;">
+
                 <div class="input-group">
                     <label>Nome ou Apelido</label>
+
                     <div class="input-field">
                         <i class="fa-regular fa-user"></i>
-                        <input type="text" name="Nome" placeholder="Como deseja ser chamado" required />
+
+                        <input type="text"
+                               name="Nome"
+                               placeholder="Como deseja ser chamado"
+                               required />
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label>E-mail</label>
+
                     <div class="input-field">
                         <i class="fa-regular fa-envelope"></i>
-                        <input type="email" name="Email" placeholder="seu@email.com" required />
+
+                        <input type="email"
+                               name="Email"
+                               placeholder="seu@email.com"
+                               required />
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label>CPF</label>
+
                     <div class="input-field">
                         <i class="fa-regular fa-id-card"></i>
-                        <input type="text" name="CPF" placeholder="000.000.000-00" maxlength="14" required />
+
+                        <input type="text"
+                               name="CPF"
+                               placeholder="000.000.000-00"
+                               maxlength="14"
+                               required />
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label>Foto de Perfil (Opcional)</label>
-                    <div class="input-field" style="overflow: hidden; padding-right: 5px;">
+
+                    <div class="input-field"
+                         style="overflow: hidden; padding-right: 5px;">
+
                         <i class="fa-regular fa-image"></i>
-                        <input type="file" name="FotoPerfil" accept="image/*" onchange="mostrarPreview(event)" style="width: 100%; background: transparent; border: none; outline: none; font-size: 12px; padding: 0;" />
+
+                        <input type="file"
+                               name="FotoPerfil"
+                               accept=".jpg,.jpeg,.png,.webp"
+                               onchange="mostrarPreview(event)"
+                               style="
+                        width: 100%;
+                        background: transparent;
+                        border: none;
+                        outline: none;
+                        font-size: 12px;
+                        padding: 0;" />
                     </div>
-                    <div id="preview-container" style="display: none; text-align: center; margin-top: 10px;">
-                        <img id="img-preview" src="" alt="Preview da Foto" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #1D58E6; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" />
+
+                    <div id="preview-container"
+                         style="
+                        display: none;
+                        text-align: center;
+                        margin-top: 10px;">
+
+                        <img id="img-preview"
+                             src=""
+                             alt="Preview da foto"
+                             style="
+                        width: 80px;
+                        height: 80px;
+                        border-radius: 50%;
+                        object-fit: cover;
+                        border: 2px solid #1D58E6;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.1);" />
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label>Senha</label>
+
                     <div class="input-field">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="reg-pwd" name="Senha" placeholder="Crie uma Senha" required />
-                        <i class="fa-regular fa-eye toggle-pwd" onclick="togglePassword('reg-pwd')"></i>
+
+                        <input type="password"
+                               id="reg-pwd"
+                               name="Senha"
+                               placeholder="Crie uma senha"
+                               required />
+
+                        <i class="fa-regular fa-eye toggle-pwd"
+                           onclick="togglePassword('reg-pwd')"></i>
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label>Repita sua Senha</label>
+
                     <div class="input-field">
                         <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="reg-pwd-conf" name="ConfirmaSenha" placeholder="Repita a Senha" required />
-                        <i class="fa-regular fa-eye toggle-pwd" onclick="togglePassword('reg-pwd-conf')"></i>
+
+                        <input type="password"
+                               id="reg-pwd-conf"
+                               name="ConfirmaSenha"
+                               placeholder="Repita a senha"
+                               required />
+
+                        <i class="fa-regular fa-eye toggle-pwd"
+                           onclick="togglePassword('reg-pwd-conf')"></i>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    Criar Conta <i class="fa-solid fa-arrow-right"></i>
+                <button type="submit"
+                        class="btn-submit">
+
+                    Criar Conta
+                    <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
         </div>
 
         <div class="footer">
-            <p>Ao continuar, você concorda com nossos <br> <a asp-controller="Account" asp-action="Termos">Termos de Uso e Privacidade</a></p>
+            <p>
+                Ao continuar, você concorda com nossos
+                <br />
+
+                <a asp-controller="Account"
+                   asp-action="Termos">
+                    Termos de Uso e Privacidade
+                </a>
+            </p>
         </div>
     </div>
 
     <script>
             function switchTab(tab) {
-                const formLogin = document.getElementById('form-login');
-                const formSignup = document.getElementById('form-signup');
-                const btnLogin = document.getElementById('btn-login');
-                const btnSignup = document.getElementById('btn-signup');
+                const formLogin =
+                    document.getElementById('form-login');
+
+                const formSignup =
+                    document.getElementById('form-signup');
+
+                const btnLogin =
+                    document.getElementById('btn-login');
+
+                const btnSignup =
+                    document.getElementById('btn-signup');
 
                 if (tab === 'login') {
                     formLogin.style.display = 'block';
                     formSignup.style.display = 'none';
+
                     btnLogin.classList.add('active');
                     btnSignup.classList.remove('active');
                 } else {
                     formLogin.style.display = 'none';
                     formSignup.style.display = 'block';
+
                     btnSignup.classList.add('active');
                     btnLogin.classList.remove('active');
                 }
             }
 
             function togglePassword(inputId) {
-                const input = document.getElementById(inputId);
-                if (input.type === "password") {
-                    input.type = "text";
+                const input =
+                    document.getElementById(inputId);
+
+                if (input.type === 'password') {
+                    input.type = 'text';
                 } else {
-                    input.type = "password";
+                    input.type = 'password';
                 }
             }
 
-            // NOVA FUNÇÃO: Ler o arquivo escolhido e mostrar a foto
             function mostrarPreview(event) {
                 const input = event.target;
-                const container = document.getElementById('preview-container');
-                const img = document.getElementById('img-preview');
+
+                const container =
+                    document.getElementById('preview-container');
+
+                const img =
+                    document.getElementById('img-preview');
 
                 if (input.files && input.files[0]) {
                     const leitor = new FileReader();
 
                     leitor.onload = function(e) {
-                        img.src = e.target.result; // Coloca os dados da imagem na tag <img>
-                        container.style.display = 'block'; // Torna a imagem visível
-                    }
+                        img.src = e.target.result;
+                        container.style.display = 'block';
+                    };
 
                     leitor.readAsDataURL(input.files[0]);
                 } else {
-                    container.style.display = 'none'; // Esconde se o usuário cancelar
+                    container.style.display = 'none';
                 }
             }
 
-            // 1. MÁSCARA DO CPF
-            document.querySelector('input[name="CPF"]').addEventListener('input', function (e) {
-                let value = e.target.value.replace(/\D/g, '');
-                if (value.length > 11) value = value.slice(0, 11);
+            document
+                .querySelector('input[name="CPF"]')
+                .addEventListener('input', function(e) {
+                    let value =
+                        e.target.value.replace(/\D/g, '');
 
-                value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                value = value.replace(/(\d{3})(\d)/, '$1.$2');
-                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                    if (value.length > 11) {
+                        value = value.slice(0, 11);
+                    }
 
-                e.target.value = value;
-            });
+                    value = value.replace(
+                        /(\d{3})(\d)/,
+                        '$1.$2');
 
-            // 2. VALIDAÇÃO MATEMÁTICA DO CPF
+                    value = value.replace(
+                        /(\d{3})(\d)/,
+                        '$1.$2');
+
+                    value = value.replace(
+                        /(\d{3})(\d{1,2})$/,
+                        '$1-$2');
+
+                    e.target.value = value;
+                });
+
             function validarCPF(cpf) {
                 cpf = cpf.replace(/[^\d]+/g, '');
-                if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
 
-                let soma = 0, resto;
-                for (let i = 1; i <= 9; i++) soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+                if (cpf.length !== 11 ||
+                    /^(\d)\1{10}$/.test(cpf)) {
+                    return false;
+                }
+
+                let soma = 0;
+                let resto;
+
+                for (let i = 1; i <= 9; i++) {
+                    soma += parseInt(
+                        cpf.substring(i - 1, i)) * (11 - i);
+                }
+
                 resto = (soma * 10) % 11;
-                if ((resto == 10) || (resto == 11)) resto = 0;
-                if (resto != parseInt(cpf.substring(9, 10))) return false;
+
+                if (resto === 10 || resto === 11) {
+                    resto = 0;
+                }
+
+                if (resto !==
+                    parseInt(cpf.substring(9, 10))) {
+                    return false;
+                }
 
                 soma = 0;
-                for (let i = 1; i <= 10; i++) soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+
+                for (let i = 1; i <= 10; i++) {
+                    soma += parseInt(
+                        cpf.substring(i - 1, i)) * (12 - i);
+                }
+
                 resto = (soma * 10) % 11;
-                if ((resto == 10) || (resto == 11)) resto = 0;
-                if (resto != parseInt(cpf.substring(10, 11))) return false;
+
+                if (resto === 10 || resto === 11) {
+                    resto = 0;
+                }
+
+                if (resto !==
+                    parseInt(cpf.substring(10, 11))) {
+                    return false;
+                }
 
                 return true;
             }
 
-            // 3. FUNÇÃO QUE BLOQUEIA O CADASTRO SE O CPF FOR INVÁLIDO
             function validarFormularioCadastro() {
-                const cpfInput = document.querySelector('input[name="CPF"]').value;
+                const cpfInput =
+                    document.querySelector(
+                        'input[name="CPF"]').value;
+
                 if (!validarCPF(cpfInput)) {
-                    alert('O CPF digitado é inválido. Por favor, verifique.');
+                    alert(
+                        'O CPF digitado é inválido. Por favor, verifique.');
+
                     return false;
                 }
+
                 return true;
             }
     </script>
 
     <div vw class="enabled">
         <div vw-access-button class="active"></div>
+
         <div vw-plugin-wrapper>
             <div class="vw-plugin-top-wrapper"></div>
         </div>
     </div>
+
     <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+
     <script>
-        new window.VLibras.Widget('https://vlibras.gov.br/app');
+            new window.VLibras.Widget(
+                'https://vlibras.gov.br/app');
     </script>
 </body>
 </html>
