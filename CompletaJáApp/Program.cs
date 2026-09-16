@@ -1,7 +1,6 @@
-// Importando as pastas que precisamos (coloque no topo do arquivo)
 using Microsoft.EntityFrameworkCore;
 using CompletaJaApp.Data;
-using CompletaJaApp.Hubs; // ADICIONADO 1: Importa a pasta do seu ChatHub
+using CompletaJaApp.Hubs;
 using Microsoft.AspNetCore.Identity;
 using CompletaJaApp.Models;
 using Microsoft.AspNetCore.Http;
@@ -12,22 +11,33 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. ADICIONANDO OS SERVIÇOS
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
+
+builder.Services.AddScoped<
+    IPasswordHasher<Usuario>,
+    PasswordHasher<Usuario>>();
+
 builder.Services.AddScoped<ImagemService>();
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 6 * 1024 * 1024;
+    // O limite real de cada imagem continua sendo
+    // 5 MB e é validado pelo ImagemService.
+    options.MultipartBodyLengthLimit =
+        10 * 1024 * 1024;
 });
 
-// Configurando a conexão com o Banco de Dados SQL Server
-builder.Services.AddDbContext<CompletaJaContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Configurando a conexão com o Banco de Dados
+builder.Services.AddDbContext<CompletaJaContext>(
+    options =>
+        options.UseSqlServer(
+            builder.Configuration
+                .GetConnectionString(
+                    "DefaultConnection")));
 
-// Habilita a memória (Sessão) para o nosso sistema de Login
+// Habilita a Sessão
 builder.Services.AddSession();
 
-// ADICIONADO 2: Habilita o motor do SignalR (tempo real) no servidor
+// Habilita o SignalR
 builder.Services.AddSignalR();
 
 var app = builder.Build();
@@ -43,10 +53,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// Ativa a Sessão de fato (Aviso: tem que ficar exatamente aqui!)
 app.UseSession();
 
-// Protege todas as páginas internas do sistema.
+// Protege todas as páginas internas.
 // Somente as páginas da conta permanecem públicas.
 app.Use(async (context, next) =>
 {
@@ -57,11 +66,16 @@ app.Use(async (context, next) =>
         caminho.StartsWithSegments("/Home/Error");
 
     bool usuarioEstaLogado =
-        context.Session.GetInt32("UsuarioId").HasValue;
+        context.Session
+            .GetInt32("UsuarioId")
+            .HasValue;
 
-    if (!rotaPublica && !usuarioEstaLogado)
+    if (!rotaPublica &&
+        !usuarioEstaLogado)
     {
-        context.Response.Redirect("/Account/Index");
+        context.Response.Redirect(
+            "/Account/Index");
+
         return;
     }
 
@@ -71,12 +85,12 @@ app.Use(async (context, next) =>
 app.UseAuthorization();
 
 // 3. CONFIGURANDO A TELA INICIAL
-// Mudamos aqui para o site abrir direto no Account (Login) ao invés do Home
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Account}/{action=Index}/{id?}");
+    pattern:
+        "{controller=Account}/{action=Index}/{id?}");
 
-// ADICIONADO 3: Cria a rota que o JavaScript vai usar para conectar no Chat
+// Rota do SignalR
 app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

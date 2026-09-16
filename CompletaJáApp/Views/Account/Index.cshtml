@@ -1,5 +1,7 @@
 ﻿@{
-    ViewData["Title"] = "CompletaJá - Login";
+    ViewData["Title"] =
+        "CompletaJá - Login";
+
     Layout = null;
 }
 
@@ -7,11 +9,14 @@
 <html lang="pt-br">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0" />
 
     <title>@ViewData["Title"]</title>
 
-    <link rel="stylesheet" href="~/css/login.css" />
+    <link rel="stylesheet"
+          href="~/css/login.css" />
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
@@ -26,7 +31,10 @@
             </div>
 
             <h1>CompletaJá</h1>
-            <p>Complete seu álbum com amigos!</p>
+
+            <p>
+                Complete seu álbum com amigos!
+            </p>
         </div>
 
         <div class="form-container">
@@ -36,6 +44,7 @@
                         class="toggle-btn active"
                         type="button"
                         onclick="switchTab('login')">
+
                     Entrar
                 </button>
 
@@ -43,6 +52,7 @@
                         class="toggle-btn"
                         type="button"
                         onclick="switchTab('signup')">
+
                     Criar Conta
                 </button>
             </div>
@@ -111,7 +121,8 @@
                                required />
 
                         <i class="fa-regular fa-eye toggle-pwd"
-                           onclick="togglePassword('login-pwd')"></i>
+                           onclick="togglePassword('login-pwd')">
+                        </i>
                     </div>
                 </div>
 
@@ -125,6 +136,7 @@
                         class="btn-submit">
 
                     Entrar
+
                     <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
@@ -178,10 +190,14 @@
                 </div>
 
                 <div class="input-group">
-                    <label>Foto de Perfil (Opcional)</label>
+                    <label>
+                        Foto de Perfil (Opcional)
+                    </label>
 
                     <div class="input-field"
-                         style="overflow: hidden; padding-right: 5px;">
+                         style="
+                        overflow: hidden;
+                        padding-right: 5px;">
 
                         <i class="fa-regular fa-image"></i>
 
@@ -230,7 +246,8 @@
                                required />
 
                         <i class="fa-regular fa-eye toggle-pwd"
-                           onclick="togglePassword('reg-pwd')"></i>
+                           onclick="togglePassword('reg-pwd')">
+                        </i>
                     </div>
                 </div>
 
@@ -247,7 +264,8 @@
                                required />
 
                         <i class="fa-regular fa-eye toggle-pwd"
-                           onclick="togglePassword('reg-pwd-conf')"></i>
+                           onclick="togglePassword('reg-pwd-conf')">
+                        </i>
                     </div>
                 </div>
 
@@ -255,6 +273,7 @@
                         class="btn-submit">
 
                     Criar Conta
+
                     <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </form>
@@ -267,44 +286,66 @@
 
                 <a asp-controller="Account"
                    asp-action="Termos">
+
                     Termos de Uso e Privacidade
                 </a>
             </p>
         </div>
     </div>
 
+    <script src="~/js/site.js"
+            asp-append-version="true">
+    </script>
+
     <script>
             function switchTab(tab) {
                 const formLogin =
-                    document.getElementById('form-login');
+                    document.getElementById(
+                        'form-login');
 
                 const formSignup =
-                    document.getElementById('form-signup');
+                    document.getElementById(
+                        'form-signup');
 
                 const btnLogin =
-                    document.getElementById('btn-login');
+                    document.getElementById(
+                        'btn-login');
 
                 const btnSignup =
-                    document.getElementById('btn-signup');
+                    document.getElementById(
+                        'btn-signup');
 
                 if (tab === 'login') {
-                    formLogin.style.display = 'block';
-                    formSignup.style.display = 'none';
+                    formLogin.style.display =
+                        'block';
 
-                    btnLogin.classList.add('active');
-                    btnSignup.classList.remove('active');
+                    formSignup.style.display =
+                        'none';
+
+                    btnLogin.classList.add(
+                        'active');
+
+                    btnSignup.classList.remove(
+                        'active');
                 } else {
-                    formLogin.style.display = 'none';
-                    formSignup.style.display = 'block';
+                    formLogin.style.display =
+                        'none';
 
-                    btnSignup.classList.add('active');
-                    btnLogin.classList.remove('active');
+                    formSignup.style.display =
+                        'block';
+
+                    btnSignup.classList.add(
+                        'active');
+
+                    btnLogin.classList.remove(
+                        'active');
                 }
             }
 
             function togglePassword(inputId) {
                 const input =
-                    document.getElementById(inputId);
+                    document.getElementById(
+                        inputId);
 
                 if (input.type === 'password') {
                     input.type = 'text';
@@ -317,92 +358,137 @@
                 const input = event.target;
 
                 const container =
-                    document.getElementById('preview-container');
+                    document.getElementById(
+                        'preview-container');
 
                 const img =
-                    document.getElementById('img-preview');
+                    document.getElementById(
+                        'img-preview');
 
-                if (input.files && input.files[0]) {
-                    const leitor = new FileReader();
+                if (input.files &&
+                    input.files[0]) {
 
-                    leitor.onload = function(e) {
-                        img.src = e.target.result;
-                        container.style.display = 'block';
-                    };
+                    const leitor =
+                        new FileReader();
 
-                    leitor.readAsDataURL(input.files[0]);
+                    leitor.onload =
+                        function (e) {
+                            img.src =
+                                e.target.result;
+
+                            container.style.display =
+                                'block';
+                        };
+
+                    leitor.readAsDataURL(
+                        input.files[0]);
                 } else {
-                    container.style.display = 'none';
+                    container.style.display =
+                        'none';
                 }
             }
 
             document
-                .querySelector('input[name="CPF"]')
-                .addEventListener('input', function(e) {
-                    let value =
-                        e.target.value.replace(/\D/g, '');
+                .querySelector(
+                    'input[name="CPF"]')
+                .addEventListener(
+                    'input',
+                    function (e) {
+                        let value =
+                            e.target.value
+                                .replace(
+                                    /\D/g,
+                                    '');
 
-                    if (value.length > 11) {
-                        value = value.slice(0, 11);
-                    }
+                        if (value.length > 11) {
+                            value =
+                                value.slice(0, 11);
+                        }
 
-                    value = value.replace(
-                        /(\d{3})(\d)/,
-                        '$1.$2');
+                        value = value.replace(
+                            /(\d{3})(\d)/,
+                            '$1.$2');
 
-                    value = value.replace(
-                        /(\d{3})(\d)/,
-                        '$1.$2');
+                        value = value.replace(
+                            /(\d{3})(\d)/,
+                            '$1.$2');
 
-                    value = value.replace(
-                        /(\d{3})(\d{1,2})$/,
-                        '$1-$2');
+                        value = value.replace(
+                            /(\d{3})(\d{1,2})$/,
+                            '$1-$2');
 
-                    e.target.value = value;
-                });
+                        e.target.value = value;
+                    });
 
             function validarCPF(cpf) {
-                cpf = cpf.replace(/[^\d]+/g, '');
+                cpf = cpf.replace(
+                    /[^\d]+/g,
+                    '');
 
                 if (cpf.length !== 11 ||
                     /^(\d)\1{10}$/.test(cpf)) {
+
                     return false;
                 }
 
                 let soma = 0;
                 let resto;
 
-                for (let i = 1; i <= 9; i++) {
+                for (let i = 1;
+                    i <= 9;
+                    i++) {
+
                     soma += parseInt(
-                        cpf.substring(i - 1, i)) * (11 - i);
+                        cpf.substring(
+                            i - 1,
+                            i)) * (11 - i);
                 }
 
-                resto = (soma * 10) % 11;
+                resto =
+                    (soma * 10) % 11;
 
-                if (resto === 10 || resto === 11) {
+                if (resto === 10 ||
+                    resto === 11) {
+
                     resto = 0;
                 }
 
                 if (resto !==
-                    parseInt(cpf.substring(9, 10))) {
+                    parseInt(
+                        cpf.substring(
+                            9,
+                            10))) {
+
                     return false;
                 }
 
                 soma = 0;
 
-                for (let i = 1; i <= 10; i++) {
+                for (let i = 1;
+                    i <= 10;
+                    i++) {
+
                     soma += parseInt(
-                        cpf.substring(i - 1, i)) * (12 - i);
+                        cpf.substring(
+                            i - 1,
+                            i)) * (12 - i);
                 }
 
-                resto = (soma * 10) % 11;
+                resto =
+                    (soma * 10) % 11;
 
-                if (resto === 10 || resto === 11) {
+                if (resto === 10 ||
+                    resto === 11) {
+
                     resto = 0;
                 }
 
                 if (resto !==
-                    parseInt(cpf.substring(10, 11))) {
+                    parseInt(
+                        cpf.substring(
+                            10,
+                            11))) {
+
                     return false;
                 }
 
@@ -412,7 +498,8 @@
             function validarFormularioCadastro() {
                 const cpfInput =
                     document.querySelector(
-                        'input[name="CPF"]').value;
+                        'input[name="CPF"]')
+                        .value;
 
                 if (!validarCPF(cpfInput)) {
                     alert(
@@ -426,10 +513,13 @@
     </script>
 
     <div vw class="enabled">
-        <div vw-access-button class="active"></div>
+        <div vw-access-button
+             class="active">
+        </div>
 
         <div vw-plugin-wrapper>
-            <div class="vw-plugin-top-wrapper"></div>
+            <div class="vw-plugin-top-wrapper">
+            </div>
         </div>
     </div>
 

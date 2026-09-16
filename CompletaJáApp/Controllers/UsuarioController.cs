@@ -12,8 +12,12 @@ namespace CompletaJáApp.Controllers
     public class UsuarioController : Controller
     {
         private readonly CompletaJaContext _context;
-        private readonly ImagemService _imagemService;
-        private readonly IPasswordHasher<Usuario> _passwordHasher;
+
+        private readonly ImagemService
+            _imagemService;
+
+        private readonly IPasswordHasher<Usuario>
+            _passwordHasher;
 
         public UsuarioController(
             CompletaJaContext context,
@@ -32,7 +36,8 @@ namespace CompletaJáApp.Controllers
         public IActionResult Editar()
         {
             int? meuId =
-                HttpContext.Session.GetInt32("UsuarioId");
+                HttpContext.Session
+                    .GetInt32("UsuarioId");
 
             if (meuId == null)
             {
@@ -42,7 +47,8 @@ namespace CompletaJáApp.Controllers
             }
 
             var usuario =
-                _context.Usuarios.Find(meuId.Value);
+                _context.Usuarios.Find(
+                    meuId.Value);
 
             if (usuario == null)
             {
@@ -61,7 +67,8 @@ namespace CompletaJáApp.Controllers
             IFormFile? NovaFoto)
         {
             int? meuId =
-                HttpContext.Session.GetInt32("UsuarioId");
+                HttpContext.Session
+                    .GetInt32("UsuarioId");
 
             if (meuId == null)
             {
@@ -71,16 +78,25 @@ namespace CompletaJáApp.Controllers
             }
 
             var usuario =
-                _context.Usuarios.Find(meuId.Value);
+                _context.Usuarios.Find(
+                    meuId.Value);
 
             if (usuario == null)
             {
                 return NotFound();
             }
 
-            // Se uma nova senha foi preenchida,
-            // ela será protegida antes de ser salva.
-            if (!string.IsNullOrWhiteSpace(NovaSenha))
+            if (!ModelState.IsValid)
+            {
+                TempData["MensagemErro"] =
+                    "Não foi possível processar a imagem. O arquivo deve possuir no máximo 5 MB.";
+
+                return RedirectToAction(
+                    "Editar");
+            }
+
+            if (!string.IsNullOrWhiteSpace(
+                    NovaSenha))
             {
                 usuario.SenhaHash =
                     _passwordHasher.HashPassword(
@@ -88,19 +104,19 @@ namespace CompletaJáApp.Controllers
                         NovaSenha);
             }
 
-            // Se uma nova foto foi selecionada,
-            // ela será validada pelo ImagemService.
             if (NovaFoto != null &&
                 NovaFoto.Length > 0)
             {
                 try
                 {
                     string novaFotoUrl =
-                        await _imagemService.SalvarAsync(
-                            NovaFoto,
-                            "perfis");
+                        await _imagemService
+                            .SalvarAsync(
+                                NovaFoto,
+                                "perfis");
 
-                    usuario.FotoUrl = novaFotoUrl;
+                    usuario.FotoUrl =
+                        novaFotoUrl;
 
                     HttpContext.Session.SetString(
                         "FotoUsuario",
@@ -111,7 +127,8 @@ namespace CompletaJáApp.Controllers
                     TempData["MensagemErro"] =
                         ex.Message;
 
-                    return RedirectToAction("Editar");
+                    return RedirectToAction(
+                        "Editar");
                 }
             }
 
@@ -120,7 +137,8 @@ namespace CompletaJáApp.Controllers
             TempData["MensagemSucesso"] =
                 "Perfil atualizado com sucesso!";
 
-            return RedirectToAction("Editar");
+            return RedirectToAction(
+                "Editar");
         }
     }
 }

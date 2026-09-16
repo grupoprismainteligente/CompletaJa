@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,38 +11,70 @@ namespace CompletaJaApp.Services
 {
     public class ImagemService
     {
-        private const long TamanhoMaximo = 5 * 1024 * 1024;
+        private const long TamanhoMaximo =
+            5 * 1024 * 1024;
 
-        private readonly IWebHostEnvironment _environment;
+        private readonly Cloudinary _cloudinary;
 
-        private static readonly HashSet<string> ExtensoesPermitidas =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ".jpg",
-                ".jpeg",
-                ".png",
-                ".webp"
-            };
+        private static readonly HashSet<string>
+            ExtensoesPermitidas =
+                new HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase)
+                {
+                    ".jpg",
+                    ".jpeg",
+                    ".png",
+                    ".webp"
+                };
 
-        private static readonly HashSet<string> PastasPermitidas =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "usuarios",
-                "perfis",
-                "albuns",
-                "locais"
-            };
+        private static readonly HashSet<string>
+            PastasPermitidas =
+                new HashSet<string>(
+                    StringComparer.OrdinalIgnoreCase)
+                {
+                    "usuarios",
+                    "perfis",
+                    "albuns",
+                    "locais"
+                };
 
-        public ImagemService(IWebHostEnvironment environment)
+        public ImagemService(
+            IConfiguration configuration)
         {
-            _environment = environment;
+            string? cloudName =
+                configuration["Cloudinary:CloudName"];
+
+            string? apiKey =
+                configuration["Cloudinary:ApiKey"];
+
+            string? apiSecret =
+                configuration["Cloudinary:ApiSecret"];
+
+            if (string.IsNullOrWhiteSpace(cloudName) ||
+                string.IsNullOrWhiteSpace(apiKey) ||
+                string.IsNullOrWhiteSpace(apiSecret))
+            {
+                throw new InvalidOperationException(
+                    "As credenciais do Cloudinary não foram configuradas.");
+            }
+
+            var conta = new Account(
+                cloudName,
+                apiKey,
+                apiSecret);
+
+            _cloudinary =
+                new Cloudinary(conta);
+
+            _cloudinary.Api.Secure = true;
         }
 
         public async Task<string> SalvarAsync(
             IFormFile arquivo,
             string subpasta)
         {
-            if (arquivo == null || arquivo.Length == 0)
+            if (arquivo == null ||
+                arquivo.Length == 0)
             {
                 throw new InvalidOperationException(
                     "Selecione uma imagem válida.");
@@ -59,16 +93,20 @@ namespace CompletaJaApp.Services
             }
 
             string extensaoInformada =
-                Path.GetExtension(arquivo.FileName).ToLowerInvariant();
+                Path.GetExtension(
+                    arquivo.FileName)
+                    .ToLowerInvariant();
 
-            if (!ExtensoesPermitidas.Contains(extensaoInformada))
+            if (!ExtensoesPermitidas.Contains(
+                    extensaoInformada))
             {
                 throw new InvalidOperationException(
                     "Formato não permitido. Utilize JPG, JPEG, PNG ou WebP.");
             }
 
             string? extensaoReal =
-                await DetectarExtensaoRealAsync(arquivo);
+                await DetectarExtensaoRealAsync(
+                    arquivo);
 
             if (extensaoReal == null)
             {
@@ -87,43 +125,72 @@ namespace CompletaJaApp.Services
                     "O conteúdo do arquivo não corresponde à sua extensão.");
             }
 
-            string webRootPath = _environment.WebRootPath
-                ?? throw new InvalidOperationException(
-                    "A pasta pública do sistema não foi encontrada.");
-
-            string pastaFisica = Path.Combine(
-                webRootPath,
-                "uploads",
-                subpasta);
-
-            Directory.CreateDirectory(pastaFisica);
-
             string nomeArquivo =
-                Guid.NewGuid().ToString("N") + extensaoReal;
+                Guid.NewGuid().ToString("N");
 
-            string caminhoCompleto =
-                Path.Combine(pastaFisica, nomeArquivo);
+            await using var stream =
+                arquivo.OpenReadStream();
 
-            await using var stream = new FileStream(
-                caminhoCompleto,
-                FileMode.CreateNew,
-                FileAccess.Write,
-                FileShare.None);
+            var parametros =
+                new ImageUploadParams
+                {
+                    File = new FileDescription(
+                        nomeArquivo + extensaoReal,
+                        stream),
 
-            await arquivo.CopyToAsync(stream);
+                    PublicId = nomeArquivo,
 
-            return $"/uploads/{subpasta}/{nomeArquivo}";
+                    Folder =
+                        $"completaja/{subpasta}",
+
+                    Overwrite = false,
+
+                    UseFilename = false,
+
+                    UniqueFilename = false
+                };
+
+            ImageUploadResult resultado;
+
+            try
+            {
+                resultado =
+                    await _cloudinary.UploadAsync(
+                        parametros);
+            }
+            catch (Exception)
+            {
+                throw new InvalidOperationException(
+                    "Não foi possível enviar a imagem. Tente novamente.");
+            }
+
+            if (resultado.Error != null ||
+                resultado.SecureUrl == null)
+            {
+                throw new InvalidOperationException(
+                    "Não foi possível armazenar a imagem no Cloudinary.");
+            }
+
+            return resultado
+                .SecureUrl
+                .ToString();
         }
 
-        private static async Task<string?> DetectarExtensaoRealAsync(
-            IFormFile arquivo)
+        private static async Task<string?>
+            DetectarExtensaoRealAsync(
+                IFormFile arquivo)
         {
-            byte[] cabecalho = new byte[12];
+            byte[] cabecalho =
+                new byte[12];
 
-            await using var stream = arquivo.OpenReadStream();
+            await using var stream =
+                arquivo.OpenReadStream();
 
-            int bytesLidos = await stream.ReadAsync(
-                cabecalho.AsMemory(0, cabecalho.Length));
+            int bytesLidos =
+                await stream.ReadAsync(
+                    cabecalho.AsMemory(
+                        0,
+                        cabecalho.Length));
 
             // JPEG
             if (bytesLidos >= 3 &&
