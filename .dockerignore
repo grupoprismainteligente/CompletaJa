@@ -1,0 +1,15 @@
+﻿.git
+.github
+.vs
+
+**/bin
+**/obj
+
+**/*.user
+**/*.suo
+
+**/wwwroot/uploads
+
+secrets.json
+.env
+.env.*
