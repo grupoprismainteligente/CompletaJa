@@ -140,7 +140,7 @@ namespace CompletaJaApp.Services
 
                     PublicId = nomeArquivo,
 
-                    Folder =
+                    AssetFolder =
                         $"completaja/{subpasta}",
 
                     Overwrite = false,
