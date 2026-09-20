@@ -32,7 +32,10 @@ builder.Services.AddDbContext<CompletaJaContext>(
         options.UseSqlServer(
             builder.Configuration
                 .GetConnectionString(
-                    "DefaultConnection")));
+                    "DefaultConnection"),
+            sqlServerOptions =>
+                sqlServerOptions
+                    .EnableRetryOnFailure()));
 
 // Habilita a Sessão
 builder.Services.AddSession();
@@ -41,6 +44,17 @@ builder.Services.AddSession();
 builder.Services.AddSignalR();
 
 var app = builder.Build();
+
+// Cria o banco e aplica as migrations pendentes.
+// Se todas já estiverem aplicadas, nenhuma alteração é feita.
+using (var scope = app.Services.CreateScope())
+{
+    var context =
+        scope.ServiceProvider
+            .GetRequiredService<CompletaJaContext>();
+
+    await context.Database.MigrateAsync();
+}
 
 // 2. CONFIGURANDO O COMPORTAMENTO DO SITE
 if (!app.Environment.IsDevelopment())
