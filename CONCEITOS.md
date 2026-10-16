@@ -28,3 +28,27 @@ Glossário para estudar depois do prazo. Cada item diz o que é e onde aparece n
 - **`IndexedStack`**: empilha várias telas e mostra só a do índice atual, mantendo o estado das outras vivo. Em `app_shell.dart`.
 - **`Center`, `Column`, `Padding`, `SizedBox`**: layout básico: centralizar, empilhar na vertical, dar margem interna, criar espaço fixo entre itens. Em `mensagem_central.dart`.
 - **Teste de widget (`testWidgets`, `pumpWidget`, `tap`, `pumpAndSettle`, `find`)**: monta o app num "celular de mentira", toca em coisas e confere o que aparece. Rodar com `flutter test`. Em `test/widget_test.dart`.
+
+## Etapa 2b: UI idêntica ao site com dados fictícios
+
+### Dart
+- **`enum`**: lista fechada de opções (`Aba`, `_Filtro`). Evita "strings mágicas". Em `tela_padrao.dart` e `figurinhas_screen.dart`.
+- **`switch` como expressão**: devolve um valor conforme o caso (`switch (destino) { Aba.home => ... }`). Em `tela_padrao.dart`.
+- **Singleton (`static final instancia`)**: um único objeto compartilhado por todo o app. Usado em `services/dados_ficticios.dart`.
+- **`late final`**: campo calculado uma vez, logo depois do construtor. Em `models/resumo_figurinhas.dart`.
+- **Getter (`get faltante`)**: propriedade calculada na hora. Em `models/figurinha.dart`.
+- **`Random(semente)`**: sorteio repetível; mesma semente, mesmos números. Gera as figurinhas fictícias.
+
+### Flutter
+- **`ChangeNotifier` + `ListenableBuilder`**: o dado avisa (`notifyListeners`) e a tela escuta e se redesenha. Usado ao adicionar um álbum (`dados_ficticios.dart`, `meus_albuns_screen.dart`).
+- **`Navigator.push / pushReplacement / pop`**: empilha, troca ou fecha telas. Barra inferior e cards.
+- **`SafeArea`**: evita que o conteúdo fique sob a barra de status. Em `tela_padrao.dart`.
+- **`ListView`**: lista que rola. Em Meus Álbuns e Catálogo.
+- **`CustomScrollView` + `SliverGrid.builder`**: rola cabeçalho e grade juntos e constrói só os itens visíveis. Em `figurinhas_screen.dart`.
+- **`SliverGridDelegateWithMaxCrossAxisExtent`**: grade que decide quantas colunas cabem (o "auto-fill" do CSS).
+- **`Stack` + `Positioned`**: sobrepõe widgets (selo "+N" no canto da figurinha). Em `card_figurinha.dart`.
+- **`showDialog` / `AlertDialog`**: janela de confirmação ou detalhe. Sair, vincular álbum, detalhe da figurinha.
+- **`TextEditingController`**: lê/controla um campo de texto; precisa de `dispose()`. Em `login_screen.dart`.
+- **`InkWell` / `GestureDetector`**: tornam qualquer widget clicável.
+- **`Image.asset` + `errorBuilder`**: imagem embutida no app, com plano B se falhar. Em `card_album.dart`.
+- **`google_fonts`**: baixa a fonte Inter (a do site). Em `core/theme.dart`.
