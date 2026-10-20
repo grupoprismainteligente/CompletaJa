@@ -1,4 +1,6 @@
-﻿@using Microsoft.AspNetCore.Http
+﻿@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery Antiforgery
+@using Microsoft.AspNetCore.Http
 
 @{
     var fotoUsuario =
@@ -46,6 +48,8 @@
                     transform: scale(1.1);
                 }
     </style>
+
+    <meta name="csrf-token" content="@(Antiforgery.GetAndStoreTokens(Context).RequestToken)" />
 
     @RenderSection(
         "Styles",

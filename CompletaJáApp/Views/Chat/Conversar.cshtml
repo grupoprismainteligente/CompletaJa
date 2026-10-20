@@ -234,7 +234,7 @@
             }
         </div>
 
-        <form class="chat-input-area" id="chat-form" action="/Chat/Enviar" method="post">
+        <form class="chat-input-area" id="chat-form" action="/Chat/Enviar" method="post" asp-antiforgery="true">
             <input type="hidden" id="destinatario-id" name="DestinatarioId" value="@outroUsuario.Id" />
             <input type="text"
                    id="txt-mensagem"
@@ -364,6 +364,7 @@
         method: 'POST',
         headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        'RequestVerificationToken': document.querySelector('meta[name="csrf-token"]').content
         },
         body: `DestinatarioId=${destinoId}&Texto=${encodeURIComponent(mensagemTexto)}`
         });

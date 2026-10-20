@@ -15,6 +15,7 @@ namespace CompletaJaApp.Data
 
         // Tabelas de Entidades Globais
         public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<RedefinicaoSenha> RedefinicoesSenha { get; set; }
         public DbSet<Album> Albuns { get; set; }
         public DbSet<Local> Locais { get; set; }
 

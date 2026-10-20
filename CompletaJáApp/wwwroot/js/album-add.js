@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Consulta o back-end (C#) para verificar se já existe um álbum igual
             const url = `/Album/VerificarDuplicidade?nome=${encodeURIComponent(nome)}&quantidade=${qtd}`;
-            const response = await fetch(url, { method: 'POST' });
+            const response = await fetch(url, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('meta[name="csrf-token"]').content } });
             const data = await response.json();
 
             // Se for duplicado, pede confirmação ao usuário
