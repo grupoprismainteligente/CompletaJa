@@ -96,6 +96,7 @@ namespace CompletaJáApp.Controllers
             return View(matchesRecentes);
         }
 
+        [HttpPost]
         public IActionResult Sair()
         {
             HttpContext.Session.Clear();

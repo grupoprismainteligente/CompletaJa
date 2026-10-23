@@ -367,6 +367,14 @@
         'RequestVerificationToken': document.querySelector('meta[name="csrf-token"]').content
         },
         body: `DestinatarioId=${destinoId}&Texto=${encodeURIComponent(mensagemTexto)}`
+        }).then(function (resposta) {
+        // Sessão expirada: o servidor redireciona para o login
+        if (resposta.redirected || !resposta.ok) {
+        alert('Sua sessão expirou ou a mensagem não foi enviada. Faça login novamente.');
+        window.location.href = '/Account/Index';
+        }
+        }).catch(function () {
+        alert('Não foi possível enviar a mensagem. Verifique sua conexão.');
         });
 
         campoMensagem.value = "";

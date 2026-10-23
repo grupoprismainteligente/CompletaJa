@@ -132,6 +132,11 @@ app.Use(async (context, next) =>
 {
     var caminho = context.Request.Path;
 
+    // Páginas dinâmicas não ficam no cache do navegador: depois do
+    // logout, o botão "voltar" do navegador não mostra telas internas.
+    context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
+    context.Response.Headers["Pragma"] = "no-cache";
+
     bool rotaPublica =
         caminho.StartsWithSegments("/Account") ||
         caminho.StartsWithSegments("/Home/Error");

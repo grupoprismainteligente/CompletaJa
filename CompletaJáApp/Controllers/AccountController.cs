@@ -48,6 +48,12 @@ namespace CompletaJáApp.Controllers
         [HttpGet]
         public IActionResult Index()
         {
+            // Quem já está logado não precisa ver a tela de login
+            if (HttpContext.Session.GetInt32("UsuarioId").HasValue)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
 
