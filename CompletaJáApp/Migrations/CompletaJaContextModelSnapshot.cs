@@ -152,12 +152,41 @@ namespace CompletaJáApp.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Texto")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Mensagens");
+                });
+
+            modelBuilder.Entity("CompletaJaApp.Models.RedefinicaoSenha", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ExpiraEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("Usado")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("RedefinicoesSenha");
                 });
 
             modelBuilder.Entity("CompletaJaApp.Models.Usuario", b =>
@@ -179,7 +208,6 @@ namespace CompletaJáApp.Migrations
                         .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("FotoUrl")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 

@@ -92,7 +92,7 @@
             <button class="close-btn" onclick="fecharModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <form action="/Figurinha/Salvar" method="post">
+        <form action="/Figurinha/Salvar" method="post" asp-antiforgery="true">
             <input type="hidden" name="AlbumId" value="@album.Id" />
             <input type="hidden" name="Codigo" id="inputCodigoModal" />
 

@@ -114,7 +114,7 @@
             <span style="color: #1e40af;"><i class="fa-solid fa-users"></i> @Model.UsuariosVinculados colecionadores ativos neste ponto</span>
         </div>
 
-        <form id="formDesvincular" method="post" action="/Locais/Desvincular">
+        <form id="formDesvincular" method="post" action="/Locais/Desvincular" asp-antiforgery="true">
             <input type="hidden" name="localId" value="@Model.Id" />
             <button type="submit" class="btn-desvincular">
                 <i class="fa-solid fa-规律 fa-link-slash"></i> Desvincular-se deste Ponto

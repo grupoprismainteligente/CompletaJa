@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Consulta o back-end para bloquear cadastros com o mesmo CNPJ
             try {
                 const url = `/Locais/VerificarDuplicidade?cnpj=${encodeURIComponent(cnpj)}`;
-                const response = await fetch(url, { method: 'POST' });
+                const response = await fetch(url, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('meta[name="csrf-token"]').content } });
 
                 if (response.ok) {
                     const data = await response.json();

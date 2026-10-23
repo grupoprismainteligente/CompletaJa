@@ -70,6 +70,7 @@
         }
 
         <form id="formCriarAlbum"
+              asp-antiforgery="true"
               method="post"
               action="/Album/Criar"
               enctype="multipart/form-data">
@@ -267,6 +268,9 @@
                                 '/Album/VerificarDuplicidade',
                                 {
                                     method: 'POST',
+                                    headers: {
+                                        'RequestVerificationToken': document.querySelector('meta[name="csrf-token"]').content
+                                    },
                                     body: formData
                                 });
 
