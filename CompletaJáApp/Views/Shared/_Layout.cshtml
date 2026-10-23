@@ -5,8 +5,18 @@
 @{
     var fotoUsuario =
         Context.Session.GetString(
-            "FotoUsuario")
-        ?? "/images/default-avatar.png";
+            "FotoUsuario");
+
+    if (string.IsNullOrWhiteSpace(fotoUsuario))
+    {
+        fotoUsuario = "/images/default-avatar.png";
+    }
+
+    // Na tela inicial não há para onde "voltar"
+    var rotaAtual = ViewContext.RouteData.Values;
+    bool ehInicio =
+        string.Equals(rotaAtual["controller"]?.ToString(), "Home", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(rotaAtual["action"]?.ToString(), "Index", StringComparison.OrdinalIgnoreCase);
 }
 
 <!DOCTYPE html>
@@ -62,12 +72,17 @@
         <header class="top-header">
             <div class="user-info">
 
-                <button type="button"
-                        onclick="history.back()"
-                        class="btn-voltar-layout">
+                @if (!ehInicio)
+                {
+                    <button type="button"
+                            onclick="voltarTela()"
+                            class="btn-voltar-layout"
+                            title="Voltar"
+                            aria-label="Voltar">
 
-                    <i class="fa-solid fa-arrow-left"></i>
-                </button>
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                }
 
                 <a href="/Usuario/Editar"
                    style="
@@ -94,11 +109,20 @@
 
             <div class="header-actions">
 
-                <a href="/Home/Sair"
-                   onclick="return confirm('Tem certeza que deseja sair do sistema?');"
-                   class="btn-sair"
-                   style="
-                    text-decoration: none;
+                <form method="post"
+                      action="/Home/Sair"
+                      asp-antiforgery="true"
+                      onsubmit="return confirm('Tem certeza que deseja sair do sistema?');"
+                      style="margin: 0;">
+
+                    <button type="submit"
+                            class="btn-sair"
+                            style="
+                    background: none;
+                    border: none;
+                    padding: 0;
+                    cursor: pointer;
+                    font-family: inherit;
                     color: #6B7280;
                     font-size: 13px;
                     font-weight: 600;
@@ -106,11 +130,10 @@
                     gap: 5px;
                     align-items: center;">
 
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    Sair
-                </a>
-
-                <i class="fa-regular fa-bell icon-bell"></i>
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        Sair
+                    </button>
+                </form>
             </div>
         </header>
 
@@ -172,5 +195,30 @@
     @await RenderSectionAsync(
         "Scripts",
         required: false)
+    <script>
+        // Botão "voltar": só volta se a página anterior for do próprio
+        // sistema e não for a tela de login; caso contrário vai ao início.
+        function voltarTela() {
+            var ref = document.referrer || '';
+            var mesmoSite = ref.indexOf(location.origin) === 0;
+            var veioDoLogin = /\/Account(\/|$|\?)/i.test(ref.substring(location.origin.length));
+
+            if (mesmoSite && !veioDoLogin && history.length > 1) {
+                history.back();
+            } else {
+                location.href = '@Url.Action("Index", "Home")';
+            }
+        }
+
+        // Foto quebrada: troca pelo avatar padrão (uma única vez por imagem)
+        document.addEventListener('error', function (e) {
+            var img = e.target;
+            if (img && img.tagName === 'IMG' && !img.dataset.fallback &&
+                /avatar|profile-img/.test(img.className)) {
+                img.dataset.fallback = '1';
+                img.src = '/images/default-avatar.png';
+            }
+        }, true);
+    </script>
 </body>
 </html>
