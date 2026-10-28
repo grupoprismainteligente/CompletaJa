@@ -1,11 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../core/api_client.dart';
+import '../core/config.dart';
 import '../core/theme.dart';
+import '../services/auth_service.dart';
 import '../widgets/aviso.dart';
-import 'home_screen.dart';
 
-/// Login. Por enquanto aceita qualquer e-mail e senha preenchidos (dados fictícios);
-/// na etapa de API vira uma chamada real a `POST /api/auth/login`.
+/// Login real: chama `POST /api/auth/login` pelo `AuthService`. Se der certo, o
+/// `PortaDeEntrada` (main.dart) troca esta tela pela Home sozinho.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -22,21 +27,55 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _senhaVisivel = false;
   String? _erro;
 
+  bool _carregando = false;
+
+  // O servidor gratuito dorme: se a resposta demora, avisamos em vez de parecer travado.
+  bool _servidorAcordando = false;
+  Timer? _avisoAcordando;
+
   // Controllers precisam ser liberados quando a tela sai, senão vazam memória.
   @override
   void dispose() {
+    _avisoAcordando?.cancel();
     _email.dispose();
     _senha.dispose();
     super.dispose();
   }
 
-  void _entrar() {
+  Future<void> _entrar() async {
+    if (_carregando) return; // evita toque duplo enquanto a chamada está em andamento
     if (_email.text.trim().isEmpty || _senha.text.isEmpty) {
       setState(() => _erro = 'Informe e-mail e senha.');
       return;
     }
-    // pushReplacement troca o login pela Home: o botão voltar não retorna ao login.
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
+
+    // Lido antes do await: usar `context` depois de uma espera exige conferir `mounted`.
+    final auth = context.read<AuthService>();
+    setState(() {
+      _erro = null;
+      _carregando = true;
+      _servidorAcordando = false;
+    });
+    _avisoAcordando = Timer(AppConfig.avisoServidorAcordando, () {
+      if (mounted) setState(() => _servidorAcordando = true);
+    });
+
+    try {
+      await auth.entrar(_email.text, _senha.text);
+      // Sucesso: o AuthService avisou e o PortaDeEntrada já trocou para a Home.
+    } on ApiException catch (e) {
+      if (mounted) setState(() => _erro = e.mensagem);
+    } catch (_) {
+      if (mounted) setState(() => _erro = 'Algo deu errado ao entrar. Tente de novo.');
+    } finally {
+      _avisoAcordando?.cancel();
+      if (mounted) {
+        setState(() {
+          _carregando = false;
+          _servidorAcordando = false;
+        });
+      }
+    }
   }
 
   @override
@@ -174,23 +213,43 @@ class _LoginScreenState extends State<LoginScreen> {
           width: double.infinity,
           height: AppTamanhos.alturaBotao,
           child: ElevatedButton(
-            onPressed: _entrar,
+            // null desabilita o botão enquanto a chamada está em andamento.
+            onPressed: _carregando ? null : _entrar,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppCores.primariaEscura,
               foregroundColor: AppCores.superficie,
+              disabledBackgroundColor: AppCores.primariaEscura,
+              disabledForegroundColor: AppCores.superficie,
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRaios.medio)),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Entrar', style: AppTextos.botaoLogin),
-                const SizedBox(width: AppEspacos.pequeno),
-                const Icon(Icons.arrow_forward, size: 18),
-              ],
-            ),
+            child: _carregando
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: AppCores.superficie),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Entrar', style: AppTextos.botaoLogin),
+                      const SizedBox(width: AppEspacos.pequeno),
+                      const Icon(Icons.arrow_forward, size: 18),
+                    ],
+                  ),
           ),
         ),
+        if (_servidorAcordando)
+          Padding(
+            padding: const EdgeInsets.only(top: AppEspacos.compacto),
+            child: Center(
+              child: Text(
+                'Acordando o servidor, isso pode levar até 1 minuto na primeira vez...',
+                textAlign: TextAlign.center,
+                style: AppTextos.rodapeLogin,
+              ),
+            ),
+          ),
       ],
     );
   }

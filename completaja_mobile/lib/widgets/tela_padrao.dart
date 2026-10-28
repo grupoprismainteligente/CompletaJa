@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../core/config.dart';
 import '../core/theme.dart';
 import '../screens/em_breve_screen.dart';
 import '../screens/home_screen.dart';
-import '../screens/login_screen.dart';
 import '../screens/meus_albuns_screen.dart';
+import '../services/auth_service.dart';
 import 'aviso.dart';
 
 /// As 4 abas da barra inferior.
@@ -53,11 +55,8 @@ class _Cabecalho extends StatelessWidget {
       ),
     );
     if (confirmou == true && context.mounted) {
-      // Remove todas as telas da pilha e volta para o login.
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (rota) => false,
-      );
+      // Apaga a sessão. O ouvinte de sessão (main.dart) fecha todas as telas e volta ao login.
+      await context.read<AuthService>().sair();
     }
   }
 
@@ -92,7 +91,7 @@ class _Cabecalho extends StatelessWidget {
                     color: AppCores.primariaClara,
                     border: Border.all(color: AppCores.primaria, width: 2),
                   ),
-                  child: const Icon(Icons.person, color: AppCores.primaria),
+                  child: const _FotoUsuario(),
                 ),
               ),
               const SizedBox(width: AppEspacos.compacto),
@@ -116,6 +115,28 @@ class _Cabecalho extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Foto do usuário logado no cabeçalho. Se não tiver foto ou a imagem falhar
+/// (sem rede, link quebrado), mostra o ícone de pessoa no lugar.
+class _FotoUsuario extends StatelessWidget {
+  const _FotoUsuario();
+
+  @override
+  Widget build(BuildContext context) {
+    const placeholder = Icon(Icons.person, color: AppCores.primaria);
+    final url = AppConfig.urlImagem(context.watch<AuthService>().usuario?.fotoUrl);
+    if (url == null) return placeholder;
+
+    // ClipOval recorta a imagem em círculo, igual ao contorno do avatar.
+    return ClipOval(
+      child: Image.network(
+        url,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => placeholder,
       ),
     );
   }

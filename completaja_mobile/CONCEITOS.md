@@ -53,3 +53,31 @@ Glossário para estudar depois do prazo. Cada item diz o que é e onde aparece n
 - **`Image.asset` + `errorBuilder`**: imagem embutida no app, com plano B se falhar. Em `card_album.dart`.
 - **`google_fonts`**: baixa a fonte Inter (a do site). Em `core/theme.dart`.
 - **`PageTransitionsTheme` + `PageTransitionsBuilder`**: define no tema como toda troca de tela é animada; `transitionDuration` zero = troca instantânea, com a tela já montada. Em `core/theme.dart` (`_TrocaInstantanea`).
+
+## Etapa 3: login real (rede, sessão e estado)
+
+### Dart
+- **`async` / `await` / `Future`**: uma chamada de rede demora; `Future` é o "resultado que chega depois" e `await` espera sem travar a tela. Em `api_client.dart` e `auth_service.dart`.
+- **`try` / `on` / `catch` / `finally`**: trata erros por tipo (`on ApiException`, `on SocketException`); `finally` roda sempre, dando certo ou não (usado para desligar o "carregando"). Em `login_screen.dart` e `api_client.dart`.
+- **`throw` e classe de exceção própria (`ApiException implements Exception`)**: cria um erro com mensagem pronta para a tela mostrar. Em `core/api_client.dart`.
+- **`fromJson` / `toJson` (factory constructor)**: transforma o JSON da API em objeto Dart e de volta. Em `models/usuario.dart`.
+- **`String.fromEnvironment` e `--dart-define`**: lê um valor passado na hora de compilar (`flutter run --dart-define=AMBIENTE=producao`); assim a URL do servidor muda sem editar código. Em `core/config.dart`.
+- **Record `({String? token, String? usuario})`**: devolve dois valores juntos sem criar uma classe. Em `ArmazenamentoSessao.ler()`.
+- **`switch` como expressão**: escolhe um valor conforme o caso (`EstadoSessao.logado => const HomeScreen()`). Em `main.dart`.
+- **`abstract class` + `implements`**: define um "contrato"; o app usa a versão real (`ArmazenamentoSeguro`) e os testes usam uma de mentira em memória. Em `services/auth_service.dart`.
+- **`enum`**: lista fechada de opções (`EstadoSessao`: iniciando, deslogado, logado).
+- **`Timer`**: executa algo depois de um tempo (avisar "acordando o servidor" após 5 s). Em `login_screen.dart`.
+
+### Flutter
+- **`ChangeNotifier` + `notifyListeners()`**: objeto que avisa quem o escuta quando muda. Em `AuthService`.
+- **`provider` (`ChangeNotifierProvider`, `context.read`, `context.watch`)**: entrega um objeto (o `AuthService`) para qualquer tela abaixo. `watch` redesenha quando ele muda; `read` só pega, sem redesenhar. Em `main.dart`, `login_screen.dart`, `tela_padrao.dart`.
+- **`flutter_secure_storage`**: guarda o token criptografado no celular (Keystore do Android), para entrar direto na próxima abertura. Em `services/auth_service.dart`.
+- **`http` e `MockClient`**: o pacote `http` faz as chamadas; nos testes o `MockClient` finge ser o servidor. Em `core/api_client.dart` e `test/widget_test.dart`.
+- **`GlobalKey<NavigatorState>` + `pushAndRemoveUntil`**: navega sem ter um `context` de tela e apaga toda a pilha de telas; usado para voltar ao login de qualquer lugar quando a sessão cai. Em `main.dart` (`_OuvinteDeSessao`).
+- **`MaterialApp.builder`**: coloca um widget "por cima" de todas as telas (aqui, o que escuta a sessão). Em `main.dart`.
+- **`StatefulWidget` com `initState` / `dispose`**: guarda estado e registra/remove ouvintes (`addListener` / `removeListener`). Em `main.dart`.
+- **`mounted`**: depois de um `await` a tela pode já ter saído; conferir `mounted` evita usar uma tela que não existe mais. Em `login_screen.dart`.
+- **`CircularProgressIndicator`**: a "bolinha girando" do carregando. Em `login_screen.dart` e `widgets/carregando.dart`.
+- **`Image.network` + `ClipOval` + `errorBuilder`**: imagem da internet recortada em círculo, com plano B se a rede ou o link falharem. Em `tela_padrao.dart` (foto do usuário).
+- **`network_security_config` (Android)**: o Android bloqueia HTTP puro por padrão; um arquivo só do build debug libera, para o emulador falar com o servidor local. Em `android/app/src/debug/res/xml/`.
+- **`uses-permission INTERNET` (AndroidManifest)**: sem ela o APK instalado não acessa a internet. Em `android/app/src/main/AndroidManifest.xml`.

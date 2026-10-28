@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/theme.dart';
+import '../services/auth_service.dart';
 import '../services/dados_ficticios.dart';
 import '../widgets/tela_padrao.dart';
 import 'em_breve_screen.dart';
@@ -26,7 +28,9 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppEspacos.lateral),
-              Text('Olá,\n${dados.nomeUsuario}!', style: AppTextos.boasVindas),
+              // O nome já é o do usuário real (vem do login). Os contadores abaixo
+              // ainda são fictícios até a etapa de ligar a Home à API.
+              Text('Olá,\n${context.watch<AuthService>().usuario?.nome ?? ''}!', style: AppTextos.boasVindas),
               const SizedBox(height: AppEspacos.enorme),
               _estatisticas(dados),
               const SizedBox(height: AppEspacos.enorme),
