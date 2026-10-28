@@ -1,0 +1,3 @@
+﻿# O .gitignore da raiz (padrão do Visual Studio) ignora qualquer pasta debug/.
+# Este manifest da pasta debug precisa ir para o git (dá permissão de INTERNET ao modo debug do Flutter).
+!debug/
