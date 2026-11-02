@@ -1,13 +1,18 @@
+import 'package:flutter/foundation.dart';
+
 /// Configuração do app: o único lugar que sabe o endereço do servidor.
 ///
-/// Para trocar de servidor sem editar código, passe `--dart-define` ao rodar:
+/// Sem nenhuma opção, o app de DESENVOLVIMENTO (`flutter run`) usa o servidor local e o
+/// APK de RELEASE (`flutter build apk`) usa o servidor de produção. Para forçar um deles:
 ///   flutter run --dart-define=AMBIENTE=producao
+///   flutter build apk --dart-define=AMBIENTE=desenvolvimento
 ///   flutter run --dart-define=API_URL=http://192.168.0.10:5022   (celular real na mesma rede)
 class AppConfig {
   AppConfig._();
 
   /// `String.fromEnvironment` lê o valor do `--dart-define` na hora de compilar.
-  static const String _ambiente = String.fromEnvironment('AMBIENTE', defaultValue: 'desenvolvimento');
+  /// Vazio = o padrão do modo de compilação (ver `producao`).
+  static const String _ambiente = String.fromEnvironment('AMBIENTE');
   static const String _urlManual = String.fromEnvironment('API_URL');
 
   /// No emulador Android, `10.0.2.2` é o "localhost" do computador onde ele roda.
@@ -16,7 +21,9 @@ class AppConfig {
   /// Site no Render (HTTPS). O plano gratuito dorme: a 1ª chamada pode levar 30-60 s.
   static const String urlProducao = 'https://completaja-prisma.onrender.com';
 
-  static bool get producao => _ambiente == 'producao';
+  /// `kReleaseMode` é verdadeiro só no APK de release: assim ninguém publica um app
+  /// apontando para o `10.0.2.2` (que só existe dentro do emulador).
+  static bool get producao => _ambiente.isEmpty ? kReleaseMode : _ambiente == 'producao';
 
   /// URL base sem barra no final.
   static String get urlBase {
