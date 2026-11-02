@@ -1,20 +1,31 @@
-/// Um álbum do catálogo. Espelha o `AlbumDto` da API (a capa aqui é um asset local).
+/// Um álbum do catálogo. Espelha o `AlbumDto` / `AlbumCatalogoDto` da API.
 class Album {
-  Album({
+  const Album({
     required this.id,
     required this.nome,
-    required this.capa,
+    required this.capaUrl,
     required this.total,
     required this.usuariosVinculados,
+    this.jaColeciona = false,
   });
 
   final int id;
   final String nome;
 
-  /// Caminho do asset da capa (nos dados reais será a URL relativa vinda da API).
-  final String capa;
+  /// URL completa (Cloudinary) ou relativa; use `AppConfig.urlImagem` para montar o endereço final.
+  final String? capaUrl;
   final int total;
+  final int usuariosVinculados;
 
-  /// Não é final: vincular um álbum soma 1 aqui, igual à regra do site.
-  int usuariosVinculados;
+  /// Só vem preenchido pelo catálogo.
+  final bool jaColeciona;
+
+  factory Album.fromJson(Map<String, dynamic> json) => Album(
+        id: json['id'] as int,
+        nome: json['nome'] as String? ?? '',
+        capaUrl: json['capaUrl'] as String?,
+        total: json['total'] as int? ?? 0,
+        usuariosVinculados: json['usuariosVinculados'] as int? ?? 0,
+        jaColeciona: json['jaColeciona'] as bool? ?? false,
+      );
 }

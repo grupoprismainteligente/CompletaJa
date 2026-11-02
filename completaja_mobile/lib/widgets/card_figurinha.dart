@@ -5,10 +5,14 @@ import '../models/figurinha.dart';
 
 /// Uma figurinha da grade. Três estados visuais, como no site:
 /// faltante (tracejada/apagada, "+"), colada (verde, check) e repetida (dourada, "+N").
+/// Tocar abre o editor de quantidade e nome.
 class CardFigurinha extends StatelessWidget {
-  const CardFigurinha({super.key, required this.figurinha});
+  const CardFigurinha({super.key, required this.figurinha, required this.aoSalvar});
 
   final Figurinha figurinha;
+
+  /// Chamado ao salvar no editor; quem usa o card é quem grava na API.
+  final Future<void> Function(int quantidade, String nome) aoSalvar;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +22,7 @@ class CardFigurinha extends StatelessWidget {
     // Stack sobrepõe widgets; o selo fica "pendurado" no canto, fora do card,
     // por isso clipBehavior: Clip.none (senão o Flutter corta o que passa da borda).
     return GestureDetector(
-      onTap: () => _mostrarDetalhe(context),
+      onTap: () => _mostrarEditor(context),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -101,61 +105,120 @@ class CardFigurinha extends StatelessWidget {
     );
   }
 
-  // Janela de detalhe, no mesmo desenho do modal do site, porém só leitura
-  // (esta versão do app é apenas de consulta).
-  void _mostrarDetalhe(BuildContext context) {
-    showDialog<void>(
+  // Janela de edição, no mesmo desenho do modal do site: quantidade em mãos e nome.
+  // Ao salvar, fecha e entrega os valores para a tela, que grava na API.
+  Future<void> _mostrarEditor(BuildContext context) async {
+    final resultado = await showDialog<({int quantidade, String nome})>(
       context: context,
-      builder: (ctx) => Dialog(
-        child: Padding(
-          padding: const EdgeInsets.all(AppEspacos.lateral + 5),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text.rich(
-                    TextSpan(
-                      text: 'Figurinha ',
-                      style: AppTextos.modalTitulo,
-                      children: [TextSpan(text: figurinha.codigo, style: AppTextos.modalNumero)],
-                    ),
+      builder: (_) => _EditorFigurinha(figurinha: figurinha),
+    );
+    if (resultado != null) await aoSalvar(resultado.quantidade, resultado.nome);
+  }
+}
+
+class _EditorFigurinha extends StatefulWidget {
+  const _EditorFigurinha({required this.figurinha});
+
+  final Figurinha figurinha;
+
+  @override
+  State<_EditorFigurinha> createState() => _EditorFigurinhaState();
+}
+
+class _EditorFigurinhaState extends State<_EditorFigurinha> {
+  // Mesmo limite da API (QuantidadeMaxima) e do tamanho da coluna Nome.
+  static const _quantidadeMaxima = 99;
+  static const _nomeMaximo = 100;
+
+  late int _quantidade = widget.figurinha.quantidade;
+  late final TextEditingController _nome = TextEditingController(text: widget.figurinha.nome);
+
+  @override
+  void dispose() {
+    _nome.dispose();
+    super.dispose();
+  }
+
+  void _mudar(int delta) => setState(() => _quantidade = (_quantidade + delta).clamp(0, _quantidadeMaxima));
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      child: Padding(
+        padding: const EdgeInsets.all(AppEspacos.lateral + 5),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    text: 'Figurinha ',
+                    style: AppTextos.modalTitulo,
+                    children: [TextSpan(text: widget.figurinha.codigo, style: AppTextos.modalNumero)],
                   ),
-                  InkWell(
-                    onTap: () => Navigator.pop(ctx),
-                    child: const Icon(Icons.close, color: AppCores.textoSuave),
+                ),
+                InkWell(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(Icons.close, color: AppCores.textoSuave),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppEspacos.lateral),
+            Center(
+              child: Column(
+                children: [
+                  Text('Quantidade em Mãos', style: AppTextos.modalRotulo),
+                  const SizedBox(height: AppEspacos.compacto),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: _quantidade > 0 ? () => _mudar(-1) : null,
+                        icon: const Icon(Icons.remove_circle_outline),
+                        color: AppCores.primaria,
+                      ),
+                      SizedBox(
+                        width: 56,
+                        child: Text('$_quantidade', style: AppTextos.modalQuantidade, textAlign: TextAlign.center),
+                      ),
+                      IconButton(
+                        onPressed: _quantidade < _quantidadeMaxima ? () => _mudar(1) : null,
+                        icon: const Icon(Icons.add_circle_outline),
+                        color: AppCores.primaria,
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: AppEspacos.lateral),
-              Center(
-                child: Column(
-                  children: [
-                    Text('Quantidade em Mãos', style: AppTextos.modalRotulo),
-                    const SizedBox(height: AppEspacos.compacto),
-                    Text('${figurinha.quantidade}', style: AppTextos.modalQuantidade),
-                  ],
+            ),
+            const SizedBox(height: AppEspacos.lateral),
+            Text('Nome do Jogador / Item', style: AppTextos.modalRotulo),
+            const SizedBox(height: AppEspacos.minimo + 1),
+            TextField(
+              controller: _nome,
+              maxLength: _nomeMaximo,
+              style: AppTextos.modalValor,
+              decoration: const InputDecoration(hintText: 'Sem nome', counterText: ''),
+            ),
+            const SizedBox(height: AppEspacos.lateral),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context, (quantidade: _quantidade, nome: _nome.text.trim())),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppCores.primaria,
+                  foregroundColor: AppCores.superficie,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: AppEspacos.compacto),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRaios.medio)),
                 ),
+                child: Text('Salvar', style: AppTextos.botaoPrimario),
               ),
-              const SizedBox(height: AppEspacos.lateral),
-              Text('Nome do Jogador / Item', style: AppTextos.modalRotulo),
-              const SizedBox(height: AppEspacos.minimo + 1),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppEspacos.compacto),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppRaios.campo),
-                  border: Border.all(color: AppCores.borda),
-                ),
-                child: Text(
-                  figurinha.nome.isEmpty ? 'Sem nome' : figurinha.nome,
-                  style: AppTextos.modalValor,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -56,6 +56,9 @@ class AuthService extends ChangeNotifier {
   EstadoSessao _estado = EstadoSessao.iniciando;
   Usuario? _usuario;
 
+  /// O mesmo cliente HTTP (com o token da sessão) é reaproveitado pelos outros serviços.
+  ApiClient get api => _api;
+
   EstadoSessao get estado => _estado;
   Usuario? get usuario => _usuario;
 

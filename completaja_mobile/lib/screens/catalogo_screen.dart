@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/theme.dart';
 import '../models/album.dart';
-import '../services/dados_ficticios.dart';
+import '../core/api_client.dart';
+import '../services/album_service.dart';
 import '../widgets/aviso.dart';
 import '../widgets/campo_busca.dart';
 import '../widgets/card_album.dart';
+import '../widgets/carrega_dados.dart';
 import '../widgets/tela_padrao.dart';
 
 /// Catálogo de álbuns do sistema, com busca e "adicionar à minha coleção".
@@ -31,23 +34,27 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
         ],
       ),
     );
-    if (confirmou == true && mounted) {
-      DadosFicticios.instancia.vincular(album.id);
-      // Como no site, depois de vincular volta para Meus Álbuns (a tela anterior).
-      Navigator.of(context).pop();
+    if (confirmou != true || !mounted) return;
+
+    final servico = context.read<AlbumService>();
+    try {
+      await servico.vincular(album.id);
+    } on ApiException catch (e) {
+      if (mounted) mostrarAviso(context, e.mensagem);
+      return;
     }
+    // Como no site, depois de vincular volta para Meus Álbuns (a tela anterior).
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final dados = DadosFicticios.instancia;
-
     return TelaPadrao(
       aba: Aba.albuns,
-      corpo: ListenableBuilder(
-        listenable: dados,
-        builder: (context, _) {
-          final albuns = dados.catalogo
+      corpo: CarregaDados<List<Album>>(
+        carregar: context.read<AlbumService>().catalogo,
+        construir: (context, catalogo) {
+          final albuns = catalogo
               .where((a) => a.nome.toLowerCase().contains(_filtro.toLowerCase().trim()))
               .toList();
 
@@ -76,9 +83,9 @@ class _CatalogoScreenState extends State<CatalogoScreen> {
                 CardAlbum(
                   album: album,
                   catalogo: true,
-                  jaColeciona: dados.jaColeciona(album.id),
+                  jaColeciona: album.jaColeciona,
                   // null desativa o toque quando o usuário já coleciona.
-                  aoTocar: dados.jaColeciona(album.id) ? null : () => _confirmar(album),
+                  aoTocar: album.jaColeciona ? null : () => _confirmar(album),
                 ),
                 const SizedBox(height: AppEspacos.medio),
               ],

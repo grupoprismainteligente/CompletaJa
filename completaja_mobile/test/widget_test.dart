@@ -51,7 +51,32 @@ MockClient _servidorDeMentira({List<http.BaseRequest>? registro}) => MockClient(
         }
         return _json(401, {'mensagem': 'E-mail ou senha inválidos.'});
       }
-      if (request.url.path == '/api/home') return _json(200, {'repetidas': 0});
+      if (request.url.path == '/api/home') return _json(200, {'nome': 'Igomes', 'repetidas': 4, 'faltantes': 9});
+      if (request.url.path == '/api/albuns/meus') {
+        return _json(200, [
+          {'id': 1, 'nome': 'Álbum do Banco', 'capaUrl': null, 'total': 3, 'usuariosVinculados': 2},
+        ]);
+      }
+      if (request.method == 'PUT' && request.url.path == '/api/albuns/1/figurinhas/01') {
+        return _json(200, {'codigo': '01', 'nome': '', 'quantidade': 1});
+      }
+      if (request.method == 'PUT' && request.url.path == '/api/albuns/1/figurinhas/03') {
+        return _json(500, {});
+      }
+      if (request.url.path == '/api/albuns/1/figurinhas') {
+        return _json(200, {
+          'album': {'id': 1, 'nome': 'Álbum do Banco', 'capaUrl': null},
+          'total': 3,
+          'unicas': 2,
+          'faltantes': 1,
+          'progresso': 67,
+          'figurinhas': [
+            {'codigo': '01', 'nome': '', 'quantidade': 0},
+            {'codigo': '02', 'nome': '', 'quantidade': 1},
+            {'codigo': '03', 'nome': '', 'quantidade': 3},
+          ],
+        });
+      }
       return _json(404, {'mensagem': 'não existe'});
     });
 
@@ -198,13 +223,40 @@ void main() {
       expect(find.textContaining('Igomes'), findsOneWidget);
       expect(memoria.token, 'token-de-teste');
 
-      // Navegação (dados ainda fictícios nesta etapa).
+      // Contadores da Home vêm da API.
+      expect(find.text('4'), findsOneWidget);
+      expect(find.text('9'), findsOneWidget);
+
+      // Navegação com dados da API.
       await tester.tap(find.text('Álbuns'));
       await tester.pumpAndSettle();
       expect(find.text('Meus Álbuns'), findsOneWidget);
-      await tester.tap(find.text('Copa do Mundo 2026'));
+      await tester.tap(find.text('Álbum do Banco'));
       await tester.pumpAndSettle();
       expect(find.text('Progresso Total'), findsOneWidget);
+      expect(find.text('67%'), findsOneWidget);
+
+      // Editar a figurinha 01 (faltante): +1 e Salvar. O progresso sobe na hora.
+      expect(find.text('2 / 3 figurinhas'), findsOneWidget);
+      await tester.tap(find.text('01'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.add_circle_outline));
+      await tester.pump();
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();
+      expect(find.text('3 / 3 figurinhas'), findsOneWidget);
+      expect(find.text('100%'), findsOneWidget);
+
+      // Editar a 03 (3 em mãos, selo +2) para 2, com a API falhando: volta a +2 e avisa.
+      await tester.tap(find.text('03'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.remove_circle_outline));
+      await tester.pump();
+      await tester.tap(find.text('Salvar'));
+      await tester.pumpAndSettle();
+      expect(find.text('+2'), findsOneWidget);
+      expect(find.textContaining('Não foi possível salvar a figurinha 03'), findsOneWidget);
+      expect(find.text('3 / 3 figurinhas'), findsOneWidget); // o progresso da 01 não foi perdido
 
       // Sair: confirma no diálogo e volta ao login com a sessão apagada.
       await tester.tap(find.text('Sair'));

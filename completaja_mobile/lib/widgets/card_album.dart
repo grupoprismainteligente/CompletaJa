@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/config.dart';
 import '../core/theme.dart';
 import '../models/album.dart';
 
@@ -52,21 +53,26 @@ class CardAlbum extends StatelessWidget {
   }
 
   Widget _capa() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRaios.grande - 2),
-      child: Image.asset(
-        album.capa,
-        width: AppTamanhos.capaLista,
-        height: AppTamanhos.capaLista,
-        fit: BoxFit.cover,
-        // Imagem quebrada vira um quadrado cinza com ícone (regra do projeto).
-        errorBuilder: (_, _, _) => Container(
+    // Imagem ausente ou quebrada vira um quadrado cinza com ícone (regra do projeto).
+    Widget placeholder() => Container(
           width: AppTamanhos.capaLista,
           height: AppTamanhos.capaLista,
           color: AppCores.campo,
           child: const Icon(Icons.menu_book, color: AppCores.textoDesabilitado),
-        ),
-      ),
+        );
+
+    final url = AppConfig.urlImagem(album.capaUrl);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRaios.grande - 2),
+      child: url == null
+          ? placeholder()
+          : Image.network(
+              url,
+              width: AppTamanhos.capaLista,
+              height: AppTamanhos.capaLista,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => placeholder(),
+            ),
     );
   }
 

@@ -5,6 +5,7 @@ import 'core/api_client.dart';
 import 'core/theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'services/album_service.dart';
 import 'services/auth_service.dart';
 import 'widgets/carregando.dart';
 
@@ -33,8 +34,12 @@ class _CompletaJaAppState extends State<CompletaJaApp> {
   @override
   Widget build(BuildContext context) {
     // O Provider deixa o AuthService acessível em qualquer tela abaixo (context.read / context.watch).
-    return ChangeNotifierProvider<AuthService>.value(
-      value: widget.auth,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AuthService>.value(value: widget.auth),
+        // Reaproveita o ApiClient do login, que já carrega o token.
+        Provider<AlbumService>(create: (_) => AlbumService(widget.auth.api)),
+      ],
       child: MaterialApp(
         title: 'CompletaJá',
         debugShowCheckedModeBanner: false,

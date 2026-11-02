@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/theme.dart';
+import '../models/resumo_home.dart';
+import '../services/album_service.dart';
 import '../services/auth_service.dart';
-import '../services/dados_ficticios.dart';
+import '../widgets/carrega_dados.dart';
 import '../widgets/tela_padrao.dart';
 import 'em_breve_screen.dart';
 import 'meus_albuns_screen.dart';
@@ -14,32 +16,27 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dados = DadosFicticios.instancia;
-
     return TelaPadrao(
       aba: Aba.home,
-      // ListenableBuilder redesenha quando os dados mudam (ex.: álbum adicionado
-      // altera os contadores).
-      corpo: ListenableBuilder(
-        listenable: dados,
-        builder: (context, _) => SingleChildScrollView(
+      // Os contadores vêm da API; a Home é recriada ao trocar de aba, então busca de novo.
+      corpo: CarregaDados<ResumoHome>(
+        carregar: context.read<AlbumService>().home,
+        construir: (context, resumo) => SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: AppEspacos.lateral),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppEspacos.lateral),
-              // O nome já é o do usuário real (vem do login). Os contadores abaixo
-              // ainda são fictícios até a etapa de ligar a Home à API.
               Text('Olá,\n${context.watch<AuthService>().usuario?.nome ?? ''}!', style: AppTextos.boasVindas),
               const SizedBox(height: AppEspacos.enorme),
-              _estatisticas(dados),
+              _estatisticas(resumo),
               const SizedBox(height: AppEspacos.enorme),
               Text('Atalhos', style: AppTextos.secao),
               const SizedBox(height: AppEspacos.medio),
               _atalhoPrincipal(context),
               const SizedBox(height: AppEspacos.medio),
               _atalhosSecundarios(context),
-              _matchesRecentes(context, dados),
+              _matchesRecentes(context),
               const SizedBox(height: AppEspacos.grande),
             ],
           ),
@@ -48,7 +45,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _estatisticas(DadosFicticios dados) {
+  Widget _estatisticas(ResumoHome dados) {
     return Row(
       children: [
         Expanded(
@@ -208,7 +205,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _matchesRecentes(BuildContext context, DadosFicticios dados) {
+  Widget _matchesRecentes(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -233,58 +230,9 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppEspacos.campo),
-        // Lista que rola para o lado, como a .matches-list do site.
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              for (final match in dados.matches) ...[
-                _cardMatch(match),
-                const SizedBox(width: AppEspacos.campo - 2),
-              ],
-            ],
-          ),
-        ),
+        // Trocas e matches são da V2 (ainda não existem na API): sem dado real, sem card de mentira.
+        Text('Seus matches aparecerão aqui quando as trocas chegarem ao app.', style: AppTextos.vazioTexto),
       ],
-    );
-  }
-
-  Widget _cardMatch(MatchFicticio match) {
-    return Container(
-      width: 100,
-      padding: const EdgeInsets.symmetric(vertical: AppEspacos.compacto + 3, horizontal: AppEspacos.campo - 2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRaios.grande),
-        border: Border.all(color: AppCores.borda),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: AppTamanhos.avatarMatch,
-            height: AppTamanhos.avatarMatch,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppCores.primariaClara,
-              border: Border.all(color: AppCores.atalho, width: 2),
-            ),
-            child: Center(
-              // Inicial do nome no lugar da foto.
-              child: Text(match.nome.substring(0, 1), style: AppTextos.progressoPct),
-            ),
-          ),
-          const SizedBox(height: AppEspacos.pequeno),
-          Text(match.nome, style: AppTextos.matchNome),
-          const SizedBox(height: AppEspacos.minimo),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppEspacos.pequeno, vertical: 3),
-            decoration: BoxDecoration(
-              color: AppCores.azulSuave,
-              borderRadius: BorderRadius.circular(AppRaios.medio),
-            ),
-            child: Text('${match.mensagens} msgs', style: AppTextos.matchContagem),
-          ),
-        ],
-      ),
     );
   }
 }

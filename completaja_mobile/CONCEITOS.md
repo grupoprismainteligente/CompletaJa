@@ -81,3 +81,13 @@ Glossário para estudar depois do prazo. Cada item diz o que é e onde aparece n
 - **`Image.network` + `ClipOval` + `errorBuilder`**: imagem da internet recortada em círculo, com plano B se a rede ou o link falharem. Em `tela_padrao.dart` (foto do usuário).
 - **`network_security_config` (Android)**: o Android bloqueia HTTP puro por padrão; um arquivo só do build debug libera, para o emulador falar com o servidor local. Em `android/app/src/debug/res/xml/`.
 - **`uses-permission INTERNET` (AndroidManifest)**: sem ela o APK instalado não acessa a internet. Em `android/app/src/main/AndroidManifest.xml`.
+- **`Future` + `FutureBuilder`**: um `Future` é um resultado que chega depois (a resposta da API); o `FutureBuilder` desenha "carregando", "erro" ou "pronto" conforme ele anda. Em `widgets/carrega_dados.dart`.
+- **Widget genérico (`CarregaDados<T>`)**: o `<T>` deixa o mesmo widget servir para qualquer tipo de dado (lista de álbuns, resumo da Home...). Usado em todas as telas que leem da API.
+- **`GlobalKey<...State>`**: chave que dá acesso ao estado de um widget filho; em `meus_albuns_screen.dart` serve para mandar recarregar a lista ao voltar do catálogo.
+- **`Timer` + `dispose`**: um `Timer` precisa ser cancelado no `dispose`, senão continua rodando depois que a tela sai. Em `widgets/carrega_dados.dart` (aviso "acordando o servidor").
+- **`MultiProvider` e `Provider` simples**: entrega vários objetos de uma vez; `Provider` (sem `ChangeNotifier`) serve para objetos que não avisam mudanças, como o `AlbumService`. Em `main.dart`.
+- **`fromJson` (factory)**: transforma o JSON da API em objeto Dart. Em `models/*.dart`.
+- **Atualização otimista**: a tela muda na hora e a API é chamada depois; se falhar, a tela volta ao estado anterior e avisa. Em `figurinhas_screen.dart` (`_salvar`).
+- **`showDialog<T>` que devolve valor + record `({int quantidade, String nome})`**: o diálogo fecha com `Navigator.pop(context, valor)` e quem abriu recebe o resultado no `await`. Em `widgets/card_figurinha.dart`.
+- **`TextEditingController` + `dispose`**: lê/define o texto de um `TextField`; precisa ser descartado no `dispose`. Em `_EditorFigurinha`.
+- **`clamp`**: limita um número a um intervalo (quantidade entre 0 e 99). Em `_EditorFigurinha`.

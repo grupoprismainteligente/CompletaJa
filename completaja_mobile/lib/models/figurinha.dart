@@ -11,4 +11,10 @@ class Figurinha {
   bool get faltante => quantidade == 0;
   bool get repetida => quantidade > 1;
   int get extras => quantidade > 1 ? quantidade - 1 : 0;
+
+  factory Figurinha.fromJson(Map<String, dynamic> json) => Figurinha(
+        codigo: json['codigo'] as String,
+        nome: json['nome'] as String? ?? '',
+        quantidade: json['quantidade'] as int? ?? 0,
+      );
 }
