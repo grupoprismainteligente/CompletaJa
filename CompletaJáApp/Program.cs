@@ -22,6 +22,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+})
+// Só afeta os controllers com [ApiController] (a API do app): corpo ausente ou JSON
+// malformado respondem no mesmo formato dos demais erros da API, { "mensagem": "..." }.
+.ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = _ =>
+        new BadRequestObjectResult(new { mensagem = "Requisição inválida. Confira os dados enviados." });
 });
 
 builder.Services.AddAntiforgery(options =>
@@ -129,6 +136,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         // Mantém o nome original das claims ("sub"), que é o que a API lê.
         options.MapInboundClaims = false;
+
+        // 401 também em JSON { "mensagem": "..." }, igual aos outros erros da API.
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                context.HandleResponse(); // impede a resposta vazia padrão
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(new { mensagem = "Sessão inválida ou expirada. Entre novamente." });
+            }
+        };
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
