@@ -110,16 +110,17 @@ builder.Services.AddSession(options =>
 // Habilita o SignalR
 builder.Services.AddSignalR();
 
-// Só em desenvolvimento: libera o app Flutter rodando no Chrome (porta aleatória de
-// localhost) a chamar a API local. O APK não passa por CORS, que é regra de navegador.
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddCors(options =>
-        options.AddDefaultPolicy(policy =>
-            policy.SetIsOriginAllowed(origem => new Uri(origem).IsLoopback)
-                .AllowAnyHeader()
-                .AllowAnyMethod()));
-}
+// Libera o app Flutter rodando no Chrome em localhost (a porta muda a cada execução) a
+// chamar a API, inclusive a de produção. O APK não passa por CORS, que é regra de navegador.
+// Sem AllowCredentials: o cookie de sessão do site não é enviado nessas chamadas, e a API
+// continua exigindo o token. Pode sair depois da entrega, junto com o UseCors abaixo.
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        // TryCreate: o navegador pode mandar Origin "null", que não é uma URL válida.
+        policy.SetIsOriginAllowed(origem =>
+                Uri.TryCreate(origem, UriKind.Absolute, out var uri) && uri.IsLoopback)
+            .AllowAnyHeader()
+            .AllowAnyMethod()));
 
 // API DO APP MOBILE: autenticação por token JWT.
 // Só os controllers de Controllers/Api usam isso ([Authorize]); o site continua com Sessão.
@@ -193,13 +194,11 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Antes do UseStaticFiles para valer também para as imagens (avatar, capas).
+app.UseCors();
+
 app.UseStaticFiles();
 app.UseRouting();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseCors();
-}
 
 app.UseRateLimiter();
 
