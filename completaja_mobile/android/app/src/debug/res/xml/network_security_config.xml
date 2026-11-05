@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Existe só no build debug. O Android 9+ bloqueia HTTP puro por padrão;
+     aqui liberamos para o desenvolvimento (emulador 10.0.2.2 ou IP do PC na rede). -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

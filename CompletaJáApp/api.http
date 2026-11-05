@@ -1,0 +1,75 @@
+# Testes manuais da API do app mobile.
+# Abra no Visual Studio (2022 17.12+) ou no VS Code com a extensão "REST Client"
+# e clique em "Send Request" acima de cada chamada.
+#
+# 1) Rode o site local:  dotnet run --launch-profile http  (veja no CLAUDE.md do mobile como apontar para o banco)
+# 2) Rode primeiro o "login"; as outras chamadas reaproveitam o token dele.
+#
+# Para testar no Render, troque o @baseUrl (e use uma conta que exista lá).
+
+@baseUrl = http://localhost:5022
+# @baseUrl = https://completaja-prisma.onrender.com
+
+### Login (use uma conta que exista no banco; NÃO commite e-mail e senha reais)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "SEU_EMAIL_AQUI",
+  "senha": "SUA_SENHA_AQUI"
+}
+
+@token = {{login.response.body.$.token}}
+
+### Login com senha errada -> 401
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "SEU_EMAIL_AQUI",
+  "senha": "errada"
+}
+
+### Sem token -> 401
+GET {{baseUrl}}/api/home
+
+### Home (repetidas e faltantes)
+GET {{baseUrl}}/api/home
+Authorization: Bearer {{token}}
+
+### Meus álbuns
+GET {{baseUrl}}/api/albuns/meus
+Authorization: Bearer {{token}}
+
+### Catálogo (com jaColeciona)
+GET {{baseUrl}}/api/albuns/catalogo
+Authorization: Bearer {{token}}
+
+### Vincular álbum (troque o id pelo de um álbum do catálogo) -> 204
+POST {{baseUrl}}/api/albuns/3/vincular
+Authorization: Bearer {{token}}
+
+### Figurinhas de um álbum (grade completa 1..total)
+GET {{baseUrl}}/api/albuns/1/figurinhas
+Authorization: Bearer {{token}}
+
+### Salvar figurinha (aceita "7" ou "07")
+PUT {{baseUrl}}/api/albuns/1/figurinhas/7
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantidade": 2,
+  "nome": "Vini Jr"
+}
+
+### Código fora do álbum -> 400
+PUT {{baseUrl}}/api/albuns/1/figurinhas/9999
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantidade": 1,
+  "nome": ""
+}

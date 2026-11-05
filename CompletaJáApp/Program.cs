@@ -8,6 +8,11 @@ using CompletaJaApp.Services;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.RateLimiting;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using CompletaJaApp.Controllers.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +22,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews(options =>
 {
     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+})
+// Só afeta os controllers com [ApiController] (a API do app): corpo ausente ou JSON
+// malformado respondem no mesmo formato dos demais erros da API, { "mensagem": "..." }.
+.ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = _ =>
+        new BadRequestObjectResult(new { mensagem = "Requisição inválida. Confira os dados enviados." });
 });
 
 builder.Services.AddAntiforgery(options =>
@@ -98,6 +110,68 @@ builder.Services.AddSession(options =>
 // Habilita o SignalR
 builder.Services.AddSignalR();
 
+// Só em desenvolvimento: libera o app Flutter rodando no Chrome (porta aleatória de
+// localhost) a chamar a API local. O APK não passa por CORS, que é regra de navegador.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+        options.AddDefaultPolicy(policy =>
+            policy.SetIsOriginAllowed(origem => new Uri(origem).IsLoopback)
+                .AllowAnyHeader()
+                .AllowAnyMethod()));
+}
+
+// API DO APP MOBILE: autenticação por token JWT.
+// Só os controllers de Controllers/Api usam isso ([Authorize]); o site continua com Sessão.
+// A chave vem de configuração: user-secrets na máquina local, variável de ambiente
+// Jwt__Key no Render. Nunca colocar a chave no código nem no appsettings.json.
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+{
+    // Sem chave configurada o SITE não pode cair por causa da API. Usamos uma chave
+    // aleatória só desta execução: o login do app funciona, mas os tokens deixam de
+    // valer quando o servidor reinicia. Configure Jwt:Key para tokens duradouros.
+    jwtKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
+    Console.WriteLine("AVISO: Jwt:Key não configurada. Usando chave temporária para a API.");
+}
+else if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
+{
+    // O algoritmo HS256 exige chave de pelo menos 256 bits (32 bytes).
+    throw new InvalidOperationException("Jwt:Key precisa ter pelo menos 32 caracteres.");
+}
+var chaveJwt = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+builder.Services.AddSingleton(new TokenService(chaveJwt));
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // Mantém o nome original das claims ("sub"), que é o que a API lê.
+        options.MapInboundClaims = false;
+
+        // 401 também em JSON { "mensagem": "..." }, igual aos outros erros da API.
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                context.HandleResponse(); // impede a resposta vazia padrão
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                await context.Response.WriteAsJsonAsync(new { mensagem = "Sessão inválida ou expirada. Entre novamente." });
+            }
+        };
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = TokenService.Issuer,
+            ValidateAudience = true,
+            ValidAudience = TokenService.Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = chaveJwt,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+    });
+
 var app = builder.Build();
 
 // Cria o banco e aplica as migrations pendentes.
@@ -122,9 +196,17 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors();
+}
+
 app.UseRateLimiter();
 
 app.UseSession();
+
+// API do app: lê o token JWT (tem que vir antes do UseAuthorization).
+app.UseAuthentication();
 
 // Protege todas as páginas internas.
 // Somente as páginas da conta permanecem públicas.
@@ -137,9 +219,12 @@ app.Use(async (context, next) =>
     context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate";
     context.Response.Headers["Pragma"] = "no-cache";
 
+    // /api não usa sessão: quem protege é o [Authorize] com JWT de cada controller
+    // (responde 401 em JSON, em vez de redirecionar para a página de login).
     bool rotaPublica =
         caminho.StartsWithSegments("/Account") ||
-        caminho.StartsWithSegments("/Home/Error");
+        caminho.StartsWithSegments("/Home/Error") ||
+        caminho.StartsWithSegments("/api");
 
     bool usuarioEstaLogado =
         context.Session
