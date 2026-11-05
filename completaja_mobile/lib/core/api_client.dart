@@ -70,7 +70,12 @@ class ApiClient {
     if (resposta.statusCode >= 200 && resposta.statusCode < 300) {
       // 204 (sem conteúdo) devolve null.
       if (resposta.body.isEmpty) return null;
-      return jsonDecode(utf8.decode(resposta.bodyBytes));
+      try {
+        return jsonDecode(utf8.decode(resposta.bodyBytes));
+      } on FormatException {
+        // Ex.: o site devolveu uma página HTML, sinal de que a API não está publicada lá.
+        throw ApiException('O servidor respondeu de um jeito inesperado. Tente de novo mais tarde.');
+      }
     }
 
     throw ApiException(_mensagemDeErro(resposta), statusCode: resposta.statusCode);

@@ -91,3 +91,6 @@ Glossário para estudar depois do prazo. Cada item diz o que é e onde aparece n
 - **`showDialog<T>` que devolve valor + record `({int quantidade, String nome})`**: o diálogo fecha com `Navigator.pop(context, valor)` e quem abriu recebe o resultado no `await`. Em `widgets/card_figurinha.dart`.
 - **`TextEditingController` + `dispose`**: lê/define o texto de um `TextField`; precisa ser descartado no `dispose`. Em `_EditorFigurinha`.
 - **`clamp`**: limita um número a um intervalo (quantidade entre 0 e 99). Em `_EditorFigurinha`.
+- **`Expanded` dentro de `Row`**: um `Text` numa `Row` tenta ocupar a largura que quiser e estoura (as listras amarelas e pretas do Flutter). Com `Expanded` ele fica só com o espaço que sobra e quebra a linha. Em `_caixaErro` de `login_screen.dart`.
+- **`kIsWeb`**: verdadeiro quando o app roda no navegador; permite escolher outro endereço de servidor. Em `core/config.dart`.
+- **CORS**: regra do navegador que bloqueia chamadas a outro endereço se o servidor não autorizar. Só afeta o app no Chrome, o APK não passa por ela. Em `Program.cs`, liberado só em desenvolvimento.

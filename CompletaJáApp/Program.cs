@@ -110,6 +110,17 @@ builder.Services.AddSession(options =>
 // Habilita o SignalR
 builder.Services.AddSignalR();
 
+// Só em desenvolvimento: libera o app Flutter rodando no Chrome (porta aleatória de
+// localhost) a chamar a API local. O APK não passa por CORS, que é regra de navegador.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+        options.AddDefaultPolicy(policy =>
+            policy.SetIsOriginAllowed(origem => new Uri(origem).IsLoopback)
+                .AllowAnyHeader()
+                .AllowAnyMethod()));
+}
+
 // API DO APP MOBILE: autenticação por token JWT.
 // Só os controllers de Controllers/Api usam isso ([Authorize]); o site continua com Sessão.
 // A chave vem de configuração: user-secrets na máquina local, variável de ambiente
@@ -184,6 +195,11 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors();
+}
 
 app.UseRateLimiter();
 

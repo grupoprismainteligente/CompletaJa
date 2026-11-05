@@ -109,6 +109,13 @@ void main() {
       expect(registro.last.headers['Authorization'], 'Bearer token-de-teste');
     });
 
+    test('resposta que não é JSON (página do site) vira mensagem amigável', () async {
+      final api = ApiClient(cliente: MockClient((_) async => http.Response('<html>login</html>', 200)));
+      final auth = AuthService(api, armazenamento: ArmazenamentoMemoria());
+      await expectLater(auth.entrar('igor@teste.com', '123'), throwsA(isA<ApiException>()));
+      expect(auth.estado, isNot(EstadoSessao.logado));
+    });
+
     test('senha errada lança ApiException com a mensagem da API e não entra', () async {
       final auth = AuthService(ApiClient(cliente: _servidorDeMentira()), armazenamento: ArmazenamentoMemoria());
       await expectLater(

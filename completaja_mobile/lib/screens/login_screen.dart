@@ -282,11 +282,11 @@ class _LoginScreenState extends State<LoginScreen> {
         borderRadius: BorderRadius.circular(AppRaios.campo),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.error_outline, size: 16, color: AppCores.erro),
           const SizedBox(width: AppEspacos.minimo),
-          Text(mensagem, style: AppTextos.alertaErro),
+          // Expanded dá ao texto só a largura que sobra, assim mensagem longa quebra linha.
+          Expanded(child: Text(mensagem, style: AppTextos.alertaErro)),
         ],
       ),
     );

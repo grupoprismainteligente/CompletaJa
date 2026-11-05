@@ -16,7 +16,8 @@ class AppConfig {
   static const String _urlManual = String.fromEnvironment('API_URL');
 
   /// No emulador Android, `10.0.2.2` é o "localhost" do computador onde ele roda.
-  static const String urlDesenvolvimento = 'http://10.0.2.2:5022';
+  /// Esse endereço só existe lá dentro: no Chrome (`kIsWeb`) o servidor é `localhost` mesmo.
+  static String get urlDesenvolvimento => kIsWeb ? 'http://localhost:5022' : 'http://10.0.2.2:5022';
 
   /// Site no Render (HTTPS). O plano gratuito dorme: a 1ª chamada pode levar 30-60 s.
   static const String urlProducao = 'https://completaja-prisma.onrender.com';
